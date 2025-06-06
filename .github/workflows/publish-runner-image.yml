@@ -14,7 +14,7 @@ env:
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
   IMAGE_NAME: gh_hdc-runner
-  FULL_IMAGE_NAME: ${{ github.repository_owner }}/gh_hdc-runner
+  FULL_IMAGE_NAME: ${{ github.repository_owner }}/public-docker/gh_hdc-runner
 
 jobs:
   build-and-push:

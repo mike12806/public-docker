@@ -6,7 +6,8 @@
     "docker-compose",
     "helm-values",
     "kubernetes",
-    "argocd"
+    "argocd",
+    "github-actions"
   ],
   "automerge": true,
   "automergeType": "branch",
@@ -75,6 +76,11 @@
     "fileMatch": [
       "docker-compose.yaml",
       "docker-compose.yml"
+    ]
+  },
+  "github-actions": {
+    "fileMatch": [
+      "^\.github/workflows/[^/]+\.ya?ml$"
     ]
   },
   "customManagers": [

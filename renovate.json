@@ -1,3 +1,95 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "docker-compose",
+    "helm-values",
+    "kubernetes",
+    "argocd"
+  ],
+  "automerge": true,
+  "automergeType": "branch",
+  "automergeStrategy": "auto",
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    },
+    {
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchFileNames": [
+        "image.tag"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "immich"
+      ],
+      "automerge": true
+    }
+  ],
+  "argocd": {
+    "fileMatch": [
+      "kubernetes/apps/.*\\.ya?ml$"
+    ]
+  },
+  "kubernetes": {
+    "fileMatch": [
+      "deployment.yaml",
+      "deployment.yml"
+    ]
+  },
+  "docker-compose": {
+    "fileMatch": [
+      "docker-compose.yaml",
+      "docker-compose.yml"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        ".*\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "immich",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "ignoreTests": true
 }

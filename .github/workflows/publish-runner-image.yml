@@ -1,0 +1,72 @@
+name: Build and Publish Runner Image
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Run every 6 hours UTC
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfiles/Runner/Dockerfile'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  IMAGE_NAME: gh_hdc-runner
+  FULL_IMAGE_NAME: ${{ github.repository_owner }}/gh_hdc-runner
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
+          tags: |
+            # Always include main and latest tags
+            type=raw,value=main
+            type=raw,value=latest
+            # Include git sha for versioning
+            type=sha,format=long
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,new=true

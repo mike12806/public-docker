@@ -9,6 +9,7 @@ RUN apt-get update -y && \
     python3-venv \
     pipx \
     sshpass && \
+    jq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

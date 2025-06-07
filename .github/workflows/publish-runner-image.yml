@@ -52,27 +52,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
-          tags: |
-            # Always include latest tag
-            type=raw,value=latest
-            # Include semver tags
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            # Include git sha for tracking
-            type=sha,format=long
-
-      # Debug step to show what tags will be used
-      - name: Debug metadata
-        run: |
-          echo "All tags that will be used:"
-          echo "${{ steps.meta.outputs.tags }}"
-
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -81,6 +60,25 @@ jobs:
           default_bump: patch
           create_annotated_tag: true
           tag_prefix: v
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
+          tags: |
+            # Always include latest tag
+            type=raw,value=latest
+            # Include version from previous step
+            type=raw,value=${{ steps.tag_version.outputs.new_version }}
+            # Include git sha for tracking
+            type=sha,format=long
+
+      # Debug step to show what tags will be used
+      - name: Debug metadata
+        run: |
+          echo "All tags that will be used:"
+          echo "${{ steps.meta.outputs.tags }}"
           
       - name: Build and push Docker image
         id: build_push

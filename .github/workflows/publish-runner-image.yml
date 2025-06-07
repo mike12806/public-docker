@@ -62,7 +62,14 @@ jobs:
             # Include git sha for versioning
             type=sha,format=long
 
+      # Debug step to show what tags will be used
+      - name: Debug metadata
+        run: |
+          echo "All tags that will be used:"
+          echo "${{ steps.meta.outputs.tags }}"
+
       - name: Build and push Docker image
+        id: build_push
         uses: docker/build-push-action@v6
         with:
           context: Dockerfiles/Runner
@@ -71,3 +78,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,new=true
+          # Add provenance to false to prevent multiple entries
+          provenance: false
+
+      # Debug step to inspect the built image
+      - name: Debug image info
+        run: |
+          echo "Built image digest:"
+          echo "${{ steps.build_push.outputs.digest }}"
+          echo "All tags pushed:"
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest

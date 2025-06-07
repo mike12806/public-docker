@@ -58,9 +58,13 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
           tags: |
-            # Always include main and latest tags
+            # Always include latest tag
             type=raw,value=latest
-            # Include git sha for versioning
+            # Include semver tags
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # Include git sha for tracking
             type=sha,format=long
 
       # Debug step to show what tags will be used
@@ -69,6 +73,15 @@ jobs:
           echo "All tags that will be used:"
           echo "${{ steps.meta.outputs.tags }}"
 
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ github.token }}
+          default_bump: patch
+          create_annotated_tag: true
+          tag_prefix: v
+          
       - name: Build and push Docker image
         id: build_push
         uses: docker/build-push-action@v6

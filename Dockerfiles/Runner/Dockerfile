@@ -4,7 +4,7 @@ USER root
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-    python3-pip python3-venv pipx sshpass jq && \
+    python3-pip python3-venv pipx sshpass jq aws-cli rsync openssh-client && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /root/.cache
 

@@ -4,6 +4,7 @@
   ],
   "enabledManagers": [
     "docker-compose",
+    "dockerfile",
     "helm-values",
     "kubernetes",
     "argocd",
@@ -13,6 +14,25 @@
   "automergeType": "branch",
   "automergeStrategy": "auto",
   "packageRules": [
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    },
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    },
     {
       "matchUpdateTypes": [
         "major"
@@ -78,9 +98,15 @@
       "docker-compose.yml"
     ]
   },
+  "dockerfile": {
+    "fileMatch": [
+      "^Dockerfile",
+      "^Dockerfile\\..*"
+    ]
+  },
   "github-actions": {
     "fileMatch": [
-      "^\.github/workflows/[^/]+\.ya?ml$"
+      "^\\.github/workflows/[^/]+\\.ya?ml$"
     ]
   },
   "customManagers": [

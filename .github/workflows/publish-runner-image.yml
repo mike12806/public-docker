@@ -2,9 +2,7 @@ name: Build and Publish Runner Image
 
 on:
   schedule:
-    - cron: '0 14 * * *' # Run once per day at 2 PM UTC
-
-
+    - cron: '0 14 * * *' # 2 PM UTC daily
   push:
     branches:
       - main
@@ -14,7 +12,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  OWNER: ${{ github.repository_owner }}
   IMAGE_NAME: gh_hdc-runner
   FULL_IMAGE_NAME: ${{ github.repository_owner }}/public-docker/gh_hdc-runner
 
@@ -24,8 +21,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-      actions: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -33,53 +28,41 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          install: true
 
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: |
-            /tmp/.buildx-cache
+          path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      
-      - name: Log in to the Container registry
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ github.token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Bump version and push tag
+      - name: Bump version and create tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
           create_annotated_tag: true
           tag_prefix: v
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
           tags: |
-            # Always include latest tag
             type=raw,value=latest
-            # Include version from previous step
             type=raw,value=${{ steps.tag_version.outputs.new_version }}
-            # Include git sha for tracking
             type=sha,format=long
 
-      # Debug step to show what tags will be used
-      - name: Debug metadata
-        run: |
-          echo "All tags that will be used:"
-          echo "${{ steps.meta.outputs.tags }}"
-          
       - name: Build and push Docker image
         id: build_push
         uses: docker/build-push-action@v6
@@ -92,30 +75,24 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,new=true
           provenance: true
 
-      # Debug step to inspect the built image
-      - name: Debug image info
-        run: |
-          echo "Built image digest:"
-          echo "${{ steps.build_push.outputs.digest }}"
-          echo "All tags pushed:"
-          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest
-
-      - name: Tag Latest Release
-        if: success()
-        run: |
-          git tag -f latest
-          git push origin latest -f
-
-      - name: Update Latest Release
-        if: success()
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: latest
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: ${{ steps.tag_version.outputs.new_version }}
           body: |
-            This is the latest stable release.
-            Version: ${{ steps.tag_version.outputs.new_version }}
-            Docker Image: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest
+            New release for version `${{ steps.tag_version.outputs.new_version }}`.
+            - Docker image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`
+            - Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`
+            - Git SHA: `${{ github.sha }}`
           draft: false
           prerelease: false
-          token: ${{ github.token }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: Output info to logs
+      - name: Show Release Info
+        run: |
+          echo "Version: ${{ steps.tag_version.outputs.new_version }}"
+          echo "Tag: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Docker Image: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}"

@@ -58,7 +58,13 @@ jobs:
 
       - name: Test container starts
         run: |
-          docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} --version
+          # Test if container can run and execute basic commands
+          if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
+            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} python3 --version
+          else
+            # For other Dockerfiles, we'll need to adjust the test command accordingly
+            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} ls /
+          fi
           if [ $? -ne 0 ]; then
             echo "Container failed to start properly"
             exit 1

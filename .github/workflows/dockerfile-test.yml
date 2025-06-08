@@ -42,10 +42,16 @@ jobs:
           name=$(dirname ${{ matrix.dockerfile }} | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           echo "name=$name" >> $GITHUB_OUTPUT
 
+      - name: Get context path
+        id: context-path
+        run: |
+          context_path=$(dirname "${{ matrix.dockerfile }}")
+          echo "path=$context_path" >> $GITHUB_OUTPUT
+
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/$(dirname ${{ matrix.dockerfile }})
+          context: ${{ github.workspace }}/${{ steps.context-path.outputs.path }}
           push: false
           load: true
           tags: test-${{ steps.image-name.outputs.name }}:${{ github.sha }}

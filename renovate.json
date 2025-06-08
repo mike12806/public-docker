@@ -82,31 +82,25 @@
     }
   ],
   "argocd": {
-    "fileMatch": [
-      "kubernetes/apps/.*\\.ya?ml$"
+    "managerFilePatterns": [
+      "/kubernetes/apps/.*\\.ya?ml$/"
     ]
   },
   "kubernetes": {
-    "fileMatch": [
-      "deployment.yaml",
-      "deployment.yml"
+    "managerFilePatterns": [
+      "/deployment.yaml/",
+      "/deployment.yml/"
     ]
   },
   "docker-compose": {
-    "fileMatch": [
-      "docker-compose.yaml",
-      "docker-compose.yml"
-    ]
-  },
-  "dockerfile": {
-    "fileMatch": [
-      "^Dockerfile",
-      "^Dockerfile\\..*"
+    "managerFilePatterns": [
+      "/docker-compose.yaml/",
+      "/docker-compose.yml/"
     ]
   },
   "github-actions": {
-    "fileMatch": [
-      "^\\.github/workflows/[^/]+\\.ya?ml$"
+    "managerFilePatterns": [
+      "/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/"
     ]
   },
   "customManagers": [

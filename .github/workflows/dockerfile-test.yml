@@ -1,10 +1,11 @@
-name: Test Docker Build
+name: docker-build-verification
 
 on:
   pull_request:
 
 jobs:
-  find-dockerfiles:
+  dockerfile-discovery:
+    name: docker-build-verification / discover
     runs-on: ubuntu-latest
     outputs:
       paths: ${{ steps.find-paths.outputs.paths }}
@@ -18,8 +19,9 @@ jobs:
           paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
           echo "paths=$paths" >> $GITHUB_OUTPUT
 
-  test-build:
-    needs: find-dockerfiles
+  test-docker-build:
+    name: docker-build-verification / build-test
+    needs: dockerfile-discovery
     runs-on: ubuntu-latest
     strategy:
       matrix:

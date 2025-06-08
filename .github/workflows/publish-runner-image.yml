@@ -99,3 +99,23 @@ jobs:
           echo "${{ steps.build_push.outputs.digest }}"
           echo "All tags pushed:"
           docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest
+
+      - name: Tag Latest Release
+        if: success()
+        run: |
+          git tag -f latest
+          git push origin latest -f
+
+      - name: Update Latest Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: 'Latest Release'
+          body: |
+            This is the latest stable release.
+            Version: ${{ steps.tag_version.outputs.new_version }}
+            Docker Image: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest
+          draft: false
+          prerelease: false
+          token: ${{ github.token }}

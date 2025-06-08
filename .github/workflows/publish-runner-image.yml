@@ -83,7 +83,7 @@ jobs:
         with:
           configuration: |
             {
-              "template": "## What's Changed\n\n${{CHANGELOG}}\n\n## Docker Image Details\n- Image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`\n- Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`\n- Git SHA: `${{ github.sha }}`",
+              "template": "## What's Changed\n\n${{UNCATEGORIZED}}\n\n## Docker Image Details\n- Image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`\n- Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`\n- Git SHA: `${{ github.sha }}`",
               "categories": [
                 {
                   "title": "## 🚀 Features",

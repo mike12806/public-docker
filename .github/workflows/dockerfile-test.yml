@@ -2,9 +2,15 @@ name: Test Docker Build
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  find-dockerfiles:
+  dockerfile-discovery:
+    name: Discover Dockerfiles
     runs-on: ubuntu-latest
     outputs:
       paths: ${{ steps.find-paths.outputs.paths }}
@@ -18,12 +24,13 @@ jobs:
           paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
           echo "paths=$paths" >> $GITHUB_OUTPUT
 
-  test-build:
-    needs: find-dockerfiles
+  test-docker-build:
+    name: Test Docker Build
+    needs: dockerfile-discovery
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dockerfile: ${{ fromJson(needs.find-dockerfiles.outputs.paths) }}
+        dockerfile: ${{ fromJson(needs.dockerfile-discovery.outputs.paths) }}
       fail-fast: false
     permissions:
       contents: read

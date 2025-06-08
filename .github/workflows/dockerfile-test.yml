@@ -1,4 +1,4 @@
-name: Test Docker Build
+name: docker-build-verification
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   dockerfile-discovery:
-    name: Discover Dockerfiles
+    name: docker-build-verification / discover
     runs-on: ubuntu-latest
     outputs:
       paths: ${{ steps.find-paths.outputs.paths }}
@@ -25,7 +25,7 @@ jobs:
           echo "paths=$paths" >> $GITHUB_OUTPUT
 
   test-docker-build:
-    name: Test Docker Build
+    name: docker-build-verification / build-test
     needs: dockerfile-discovery
     runs-on: ubuntu-latest
     strategy:

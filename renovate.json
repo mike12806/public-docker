@@ -13,6 +13,7 @@
   "automerge": true,
   "automergeType": "branch",
   "automergeStrategy": "auto",
+  "platformAutomerge": true,
   "packageRules": [
     {
       "matchManagers": [

@@ -111,7 +111,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          name: 'Latest Release'
+          name: ${{ steps.tag_version.outputs.new_version }}
           body: |
             This is the latest stable release.
             Version: ${{ steps.tag_version.outputs.new_version }}

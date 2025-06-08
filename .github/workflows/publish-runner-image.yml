@@ -75,16 +75,50 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,new=true
           provenance: true
 
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: |
+            {
+              "template": "## What's Changed\n\n${{CHANGELOG}}\n\n## Docker Image Details\n- Image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`\n- Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`\n- Git SHA: `${{ github.sha }}`",
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "## 📝 Documentation",
+                  "labels": ["documentation", "docs"]
+                },
+                {
+                  "title": "## 🔄 Dependencies",
+                  "labels": ["dependencies", "dependency"]
+                },
+                {
+                  "title": "## 🛠 Maintenance",
+                  "labels": ["maintenance", "chore"]
+                },
+                {
+                  "title": "## Other Changes",
+                  "labels": []
+                }
+              ],
+              "ignore_labels": ["duplicate", "invalid", "question", "wontfix"]
+            }
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: ${{ steps.tag_version.outputs.new_version }}
-          body: |
-            New release for version `${{ steps.tag_version.outputs.new_version }}`.
-            - Docker image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`
-            - Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`
-            - Git SHA: `${{ github.sha }}`
+          body: ${{ steps.github_release.outputs.changelog }}
           draft: false
           prerelease: false
         env:

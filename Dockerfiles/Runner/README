@@ -1,0 +1,1 @@
+A docker iamge for self-hosted github runner in Kubernetes, enabling me to pre-build in several dependencies that I need

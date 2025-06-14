@@ -21,9 +21,7 @@
       "customType": "regex",
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG YQ_VERSION=(?<currentValue>[^\\s#]+)",
-        "ARG AWS_CLI_VERSION=(?<currentValue>[^\\s#]+)",
-        "ARG B2_CLI_VERSION=(?<currentValue>[^\\s#]+)"
+        "ARG YQ_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "yq",
       "packageNameTemplate": "mikefarah/yq",
@@ -74,7 +72,7 @@
       "matchStrings": [
         "ARG PYTHON3_PIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "python3-pip",
+      "depNameTemplate": "debian_12/python3-pip",
       "datasourceTemplate": "repology"
     },
     {
@@ -83,7 +81,7 @@
       "matchStrings": [
         "ARG PYTHON3_VENV_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "python3-venv",
+      "depNameTemplate": "debian_12/python3-venv",
       "datasourceTemplate": "repology"
     },
     {
@@ -92,7 +90,7 @@
       "matchStrings": [
         "ARG PIPX_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "pipx",
+      "depNameTemplate": "debian_12/pipx",
       "datasourceTemplate": "repology"
     },
     {
@@ -101,7 +99,7 @@
       "matchStrings": [
         "ARG SSHPASS_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "sshpass",
+      "depNameTemplate": "debian_12/sshpass",
       "datasourceTemplate": "repology"
     },
     {
@@ -110,7 +108,7 @@
       "matchStrings": [
         "ARG JQ_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "jq",
+      "depNameTemplate": "debian_12/jq",
       "datasourceTemplate": "repology"
     },
     {
@@ -119,7 +117,7 @@
       "matchStrings": [
         "ARG RSYNC_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "rsync",
+      "depNameTemplate": "debian_12/rsync",
       "datasourceTemplate": "repology"
     },
     {
@@ -128,7 +126,7 @@
       "matchStrings": [
         "ARG OPENSSH_CLIENT_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "openssh-client",
+      "depNameTemplate": "debian_12/openssh-client",
       "datasourceTemplate": "repology"
     },
     {
@@ -137,7 +135,7 @@
       "matchStrings": [
         "ARG CURL_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "curl",
+      "depNameTemplate": "debian_12/curl",
       "datasourceTemplate": "repology"
     },
     {
@@ -146,7 +144,7 @@
       "matchStrings": [
         "ARG UNZIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "unzip",
+      "depNameTemplate": "debian_12/unzip",
       "datasourceTemplate": "repology"
     },
     {
@@ -155,7 +153,7 @@
       "matchStrings": [
         "ARG WGET_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "depNameTemplate": "wget",
+      "depNameTemplate": "debian_12/wget",
       "datasourceTemplate": "repology"
     }
   ],

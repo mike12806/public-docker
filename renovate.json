@@ -19,7 +19,7 @@
   "platformAutomerge": true,
   "respectLatest": true,
   "ignoreTests": false,
-  "stabilityDays": 0,
+  "minimumReleaseAge": null,
   "customManagers": [
     {
       "customType": "regex",

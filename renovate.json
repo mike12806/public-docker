@@ -20,7 +20,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG YQ_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -31,7 +33,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG AWS_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -41,7 +45,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG B2_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -51,7 +57,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG ANSIBLE_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -60,7 +68,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG LINODE_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -69,7 +79,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG PYTHON3_PIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -79,7 +91,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG PYTHON3_VENV_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -89,7 +103,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG PIPX_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -99,7 +115,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG SSHPASS_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -109,7 +127,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG JQ_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -119,7 +139,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG RSYNC_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -129,7 +151,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG OPENSSH_CLIENT_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -139,7 +163,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG CURL_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -149,7 +175,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG UNZIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -159,7 +187,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "managerFilePatterns": [
+        "/^Dockerfiles/.+/Dockerfile$/"
+      ],
       "matchStrings": [
         "ARG WGET_VERSION=(?<currentValue>[^\\s#]+)"
       ],
@@ -170,39 +200,72 @@
   ],
   "packageRules": [
     {
-      "matchManagers": ["dockerfile"],
-      "matchDepTypes": ["docker"],
-      "matchUpdateTypes": ["major"],
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDepTypes": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
-      "matchManagers": ["dockerfile"],
-      "matchDepTypes": ["docker"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDepTypes": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     },
     {
-      "matchDatasources": ["github-releases"],
-      "matchUpdateTypes": ["major"],
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
-      "matchDatasources": ["github-releases"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     },
     {
-      "matchDatasources": ["pypi"],
-      "matchUpdateTypes": ["major"],
+      "matchDatasources": [
+        "pypi"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
-      "matchDatasources": ["pypi"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": [
+        "pypi"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     },
     {
-      "matchDatasources": ["debian"],
+      "matchDatasources": [
+        "debian"
+      ],
       "automerge": true
     }
   ]

@@ -17,146 +17,71 @@
   "platformAutomerge": true,
   "regexManagers": [
     {
-      "fileMatch": [
-        "^Dockerfiles/.+/Dockerfile$"
-      ],
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<depName>[A-Z_]+)_VERSION=(?<currentValue>.*?)\\s"
+        "ARG YQ_VERSION=(?<currentValue>.*?)\\s",
+        "ARG AWS_CLI_VERSION=(?<currentValue>.*?)\\s",
+        "ARG B2_CLI_VERSION=(?<currentValue>.*?)\\s"
       ],
       "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
       "depNameTemplate": {
-        "PYTHON_PIP_VERSION": "pypa/pip",
-        "JQ_VERSION": "jqlang/jq",
         "YQ_VERSION": "mikefarah/yq",
         "AWS_CLI_VERSION": "aws/aws-cli",
-        "B2_CLI_VERSION": "Backblaze/B2_Command_Line_Tool",
-        "ANSIBLE_VERSION": "ansible/ansible",
-        "LINODE_CLI_VERSION": "linode/linode-cli"
+        "B2_CLI_VERSION": "Backblaze/B2_Command_Line_Tool"
       }
     },
     {
-      "fileMatch": [
-        "^Dockerfiles/.+/Dockerfile$"
-      ],
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<depName>[A-Z0-9_]+)_VERSION=(?<currentValue>[0-9][0-9a-z.:-]+)"
+        "ARG ANSIBLE_VERSION=(?<currentValue>.*?)\\s",
+        "ARG LINODE_CLI_VERSION=(?<currentValue>.*?)\\s"
+      ],
+      "datasourceTemplate": "pypi",
+      "depNameTemplate": {
+        "ANSIBLE_VERSION": "ansible",
+        "LINODE_CLI_VERSION": "linode-cli"
+      }
+    },
+    {
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG (?<package>[A-Z0-9_]+)_VERSION=(?<currentValue>.*?)\\s"
       ],
       "datasourceTemplate": "ubuntu",
       "depNameTemplate": {
+        "PYTHON3_PIP_VERSION": "python3-pip",
         "PYTHON3_VENV_VERSION": "python3-venv",
         "PIPX_VERSION": "pipx",
         "SSHPASS_VERSION": "sshpass",
+        "JQ_VERSION": "jq",
         "RSYNC_VERSION": "rsync",
         "OPENSSH_CLIENT_VERSION": "openssh-client",
         "CURL_VERSION": "curl",
         "UNZIP_VERSION": "unzip",
         "WGET_VERSION": "wget"
-      }
+      },
+      "versioningTemplate": "loose"
     }
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "dockerfile"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {
-      "matchManagers": [
-        "dockerfile"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
-      "matchUpdateTypes": [
-        "major"
-      ],
+      "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchFileNames": [
-        "image.tag"
-      ],
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "immich"
-      ],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
-  ],
-  "argocd": {
-    "managerFilePatterns": [
-      "/kubernetes/apps/.*\\.ya?ml$/"
-    ]
-  },
-  "kubernetes": {
-    "managerFilePatterns": [
-      "/deployment.yaml/",
-      "/deployment.yml/"
-    ]
-  },
-  "docker-compose": {
-    "managerFilePatterns": [
-      "/docker-compose.yaml/",
-      "/docker-compose.yml/"
-    ]
-  },
-  "github-actions": {
-    "managerFilePatterns": [
-      "/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/"
-    ]
-  },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": [
-        ".*\\.ya?ml$"
-      ],
-      "matchStrings": [
-        "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "immich",
-      "versioningTemplate": "semver"
-    }
-  ],
-  "ignoreTests": true
+  ]
 }

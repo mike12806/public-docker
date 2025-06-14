@@ -216,10 +216,10 @@
       "matchDepTypes": [
         "docker"
       ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "enabled": false
+      "separateMultipleMajor": true,
+      "labels": [
+        "dependencies"
+      ]
     },
     {
       "matchManagers": [
@@ -238,10 +238,10 @@
       "matchDatasources": [
         "github-releases"
       ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "enabled": false
+      "separateMultipleMajor": true,
+      "labels": [
+        "dependencies"
+      ]
     },
     {
       "matchDatasources": [
@@ -257,10 +257,10 @@
       "matchDatasources": [
         "pypi"
       ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "enabled": false
+      "separateMultipleMajor": true,
+      "labels": [
+        "dependencies"
+      ]
     },
     {
       "matchDatasources": [

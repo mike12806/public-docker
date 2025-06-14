@@ -10,6 +10,10 @@ RUN apt-get update -y && \
     ./aws/install && \
     wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
     chmod +x /usr/bin/yq && \
+    # Install Backblaze B2 CLI
+    curl -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux -o b2 && \
+    chmod +x b2 && \
+    mv b2 /usr/local/bin/ && \
     apt-get clean && \
     rm -rf awscliv2.zip aws /var/lib/apt/lists/* /root/.cache
 

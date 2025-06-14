@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    name: validate
+    name: validate-renovate-config
     runs-on: ubuntu-latest
     permissions:
       contents: read

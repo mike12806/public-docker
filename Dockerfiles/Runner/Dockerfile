@@ -4,10 +4,12 @@ USER root
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-    python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip && \
+    python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip wget && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install && \
+    wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    chmod +x /usr/bin/yq && \
     apt-get clean && \
     rm -rf awscliv2.zip aws /var/lib/apt/lists/* /root/.cache
 

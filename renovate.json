@@ -10,56 +10,153 @@
     "kubernetes",
     "argocd",
     "github-actions",
-    "regex"
+    "custom.regex"
   ],
   "automerge": true,
   "automergeType": "branch",
   "automergeStrategy": "auto",
   "platformAutomerge": true,
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType": "regex",
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<depName>YQ|AWS_CLI|B2_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
+        "ARG YQ_VERSION=(?<currentValue>[^\\s#]+)",
+        "ARG AWS_CLI_VERSION=(?<currentValue>[^\\s#]+)",
+        "ARG B2_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "github-releases",
-      "depNameMapping": {
-        "YQ": "mikefarah/yq",
-        "AWS_CLI": "aws/aws-cli",
-        "B2_CLI": "Backblaze/B2_Command_Line_Tool"
-      },
+      "depNameTemplate": "yq",
+      "packageNameTemplate": "mikefarah/yq",
+      "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
+      "customType": "regex",
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<depName>ANSIBLE|LINODE_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
+        "ARG AWS_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "pypi",
-      "depNameMapping": {
-        "ANSIBLE": "ansible",
-        "LINODE_CLI": "linode-cli"
-      }
+      "depNameTemplate": "aws-cli",
+      "packageNameTemplate": "aws/aws-cli",
+      "datasourceTemplate": "github-releases"
     },
     {
+      "customType": "regex",
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<depName>PYTHON3_PIP|PYTHON3_VENV|PIPX|SSHPASS|JQ|RSYNC|OPENSSH_CLIENT|CURL|UNZIP|WGET)_VERSION=(?<currentValue>[^\\s#]+)"
+        "ARG B2_CLI_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "repology",
-      "packageNameTemplate": "{{{depName}}}",
-      "depNameMapping": {
-        "PYTHON3_PIP": "python3-pip",
-        "PYTHON3_VENV": "python3-venv",
-        "PIPX": "pipx",
-        "SSHPASS": "sshpass",
-        "JQ": "jq",
-        "RSYNC": "rsync",
-        "OPENSSH_CLIENT": "openssh-client",
-        "CURL": "curl",
-        "UNZIP": "unzip",
-        "WGET": "wget"
-      }
+      "depNameTemplate": "b2-cli",
+      "packageNameTemplate": "Backblaze/B2_Command_Line_Tool",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG ANSIBLE_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "ansible",
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG LINODE_CLI_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "linode-cli",
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG PYTHON3_PIP_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "python3-pip",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG PYTHON3_VENV_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "python3-venv",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG PIPX_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "pipx",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG SSHPASS_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "sshpass",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG JQ_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "jq",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG RSYNC_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "rsync",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG OPENSSH_CLIENT_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "openssh-client",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG CURL_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "curl",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG UNZIP_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "unzip",
+      "datasourceTemplate": "repology"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
+      "matchStrings": [
+        "ARG WGET_VERSION=(?<currentValue>[^\\s#]+)"
+      ],
+      "depNameTemplate": "wget",
+      "datasourceTemplate": "repology"
     }
   ],
   "packageRules": [

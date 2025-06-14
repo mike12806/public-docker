@@ -8,12 +8,52 @@
     "helm-values",
     "kubernetes",
     "argocd",
-    "github-actions"
+    "github-actions",
+    "regex"
   ],
   "automerge": true,
   "automergeType": "branch",
   "automergeStrategy": "auto",
   "platformAutomerge": true,
+  "regexManagers": [
+    {
+      "fileMatch": [
+        "^Dockerfiles/.+/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG (?<depName>[A-Z_]+)_VERSION=(?<currentValue>.*?)\\s"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": {
+        "PYTHON_PIP_VERSION": "pypa/pip",
+        "JQ_VERSION": "jqlang/jq",
+        "YQ_VERSION": "mikefarah/yq",
+        "AWS_CLI_VERSION": "aws/aws-cli",
+        "B2_CLI_VERSION": "Backblaze/B2_Command_Line_Tool",
+        "ANSIBLE_VERSION": "ansible/ansible",
+        "LINODE_CLI_VERSION": "linode/linode-cli"
+      }
+    },
+    {
+      "fileMatch": [
+        "^Dockerfiles/.+/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG (?<depName>[A-Z0-9_]+)_VERSION=(?<currentValue>[0-9][0-9a-z.:-]+)"
+      ],
+      "datasourceTemplate": "ubuntu",
+      "depNameTemplate": {
+        "PYTHON3_VENV_VERSION": "python3-venv",
+        "PIPX_VERSION": "pipx",
+        "SSHPASS_VERSION": "sshpass",
+        "RSYNC_VERSION": "rsync",
+        "OPENSSH_CLIENT_VERSION": "openssh-client",
+        "CURL_VERSION": "curl",
+        "UNZIP_VERSION": "unzip",
+        "WGET_VERSION": "wget"
+      }
+    }
+  ],
   "packageRules": [
     {
       "matchManagers": [

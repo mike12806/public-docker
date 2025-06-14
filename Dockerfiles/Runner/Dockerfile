@@ -3,7 +3,7 @@ FROM ghcr.io/actions/actions-runner:2.325.0
 USER root
 
 # Tool versions from GitHub releases and similar sources
-ARG YQ_VERSION=4.40.5
+ARG YQ_VERSION=4.45.4
 ARG AWS_CLI_VERSION=2.13.35
 ARG B2_CLI_VERSION=3.14.0
 ARG ANSIBLE_VERSION=9.1.0

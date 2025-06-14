@@ -22,33 +22,32 @@
       "matchStrings": [
         "ARG (?<depName>YQ|AWS_CLI|B2_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasourceTemplate": "github-releases",
+      "datasource": "github-releases",
       "depNameMapping": {
         "YQ": "mikefarah/yq",
         "AWS_CLI": "aws/aws-cli",
         "B2_CLI": "Backblaze/B2_Command_Line_Tool"
       },
-      "extractVersionTemplate": "^v?(?<version>.*)$",
-      "versioning": "semver"
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
         "ARG (?<depName>ANSIBLE|LINODE_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasourceTemplate": "pypi",
+      "datasource": "pypi",
       "depNameMapping": {
         "ANSIBLE": "ansible",
         "LINODE_CLI": "linode-cli"
-      },
-      "versioning": "pep440"
+      }
     },
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
         "ARG (?<depName>PYTHON3_PIP|PYTHON3_VENV|PIPX|SSHPASS|JQ|RSYNC|OPENSSH_CLIENT|CURL|UNZIP|WGET)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasourceTemplate": "ubuntu",
+      "datasource": "repology",
+      "packageNameTemplate": "{{{depName}}}",
       "depNameMapping": {
         "PYTHON3_PIP": "python3-pip",
         "PYTHON3_VENV": "python3-venv",
@@ -60,52 +59,44 @@
         "CURL": "curl",
         "UNZIP": "unzip",
         "WGET": "wget"
-      },
-      "versioning": "deb"
+      }
     }
   ],
   "packageRules": [
     {
-      "description": "Disable major updates for Docker base images",
       "matchManagers": ["dockerfile"],
       "matchDepTypes": ["docker"],
       "matchUpdateTypes": ["major"],
       "enabled": false
     },
     {
-      "description": "Auto-merge minor and patch updates for Docker images",
       "matchManagers": ["dockerfile"],
       "matchDepTypes": ["docker"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
-      "description": "Disable major updates for GitHub releases",
       "matchDatasources": ["github-releases"],
       "matchUpdateTypes": ["major"],
       "enabled": false
     },
     {
-      "description": "Auto-merge minor and patch updates for GitHub releases",
       "matchDatasources": ["github-releases"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
-      "description": "Disable major updates for PyPI packages",
       "matchDatasources": ["pypi"],
       "matchUpdateTypes": ["major"],
       "enabled": false
     },
     {
-      "description": "Auto-merge minor and patch updates for PyPI packages",
       "matchDatasources": ["pypi"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
-      "description": "Auto-merge all Ubuntu package updates",
-      "matchDatasources": ["ubuntu"],
+      "matchDatasources": ["repology"],
       "automerge": true
     }
   ]

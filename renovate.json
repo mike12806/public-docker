@@ -24,7 +24,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG YQ_VERSION=(?<currentValue>[^\\s#]+)"
@@ -37,7 +37,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG AWS_CLI_VERSION=(?<currentValue>[^\\s#]+)"
@@ -49,7 +49,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG B2_CLI_VERSION=(?<currentValue>[^\\s#]+)"
@@ -61,7 +61,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG ANSIBLE_VERSION=(?<currentValue>[^\\s#]+)"
@@ -72,7 +72,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG LINODE_CLI_VERSION=(?<currentValue>[^\\s#]+)"
@@ -83,7 +83,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG PYTHON3_PIP_VERSION=(?<currentValue>[^\\s#]+)"
@@ -95,7 +95,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG PYTHON3_VENV_VERSION=(?<currentValue>[^\\s#]+)"
@@ -107,19 +107,20 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG PIPX_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "pipx",
+      "packageNameTemplate": "pipx",
       "datasourceTemplate": "ubuntu",
       "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG SSHPASS_VERSION=(?<currentValue>[^\\s#]+)"
@@ -131,7 +132,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG JQ_VERSION=(?<currentValue>[^\\s#]+)"
@@ -143,60 +144,65 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG RSYNC_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "rsync",
+      "packageNameTemplate": "rsync",
       "datasourceTemplate": "debian",
       "versioningTemplate": "debian"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG OPENSSH_CLIENT_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "openssh-client",
+      "packageNameTemplate": "openssh-client",
       "datasourceTemplate": "debian",
       "versioningTemplate": "debian"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG CURL_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "curl",
+      "packageNameTemplate": "curl",
       "datasourceTemplate": "debian",
       "versioningTemplate": "debian"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG UNZIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "unzip",
+      "packageNameTemplate": "unzip",
       "datasourceTemplate": "debian",
       "versioningTemplate": "debian"
     },
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^Dockerfiles/.+/Dockerfile$/"
+        "Dockerfiles/.+/Dockerfile$"
       ],
       "matchStrings": [
         "ARG WGET_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "wget",
+      "packageNameTemplate": "wget",
       "datasourceTemplate": "debian",
       "versioningTemplate": "debian"
     }

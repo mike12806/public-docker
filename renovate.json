@@ -18,8 +18,9 @@
   "automergeStrategy": "squash",
   "platformAutomerge": true,
   "respectLatest": true,
-  "ignoreTests": false,
+  "ignoreTests": true,
   "minimumReleaseAge": null,
+  "rebaseWhen": auto,
   "customManagers": [
     {
       "customType": "regex",

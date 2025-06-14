@@ -20,7 +20,7 @@
   "respectLatest": true,
   "ignoreTests": true,
   "minimumReleaseAge": null,
-  "rebaseWhen": auto,
+  "rebaseWhen": "auto",
   "customManagers": [
     {
       "customType": "regex",

@@ -14,9 +14,12 @@
     "custom.regex"
   ],
   "automerge": true,
-  "automergeType": "branch",
-  "automergeStrategy": "auto",
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
   "platformAutomerge": true,
+  "respectLatest": true,
+  "ignoreTests": false,
+  "stabilityDays": 0,
   "customManagers": [
     {
       "customType": "regex",

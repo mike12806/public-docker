@@ -219,7 +219,12 @@
       "matchUpdateTypes": [
         "major"
       ],
-      "enabled": false
+      "labels": [
+        "dependencies",
+        "major"
+      ],
+      "separateMultipleMajor": true,
+      "prCreation": "immediate"
     },
     {
       "matchManagers": [
@@ -241,7 +246,12 @@
       "matchUpdateTypes": [
         "major"
       ],
-      "enabled": false
+      "labels": [
+        "dependencies",
+        "major"
+      ],
+      "separateMultipleMajor": true,
+      "prCreation": "immediate"
     },
     {
       "matchDatasources": [
@@ -260,7 +270,12 @@
       "matchUpdateTypes": [
         "major"
       ],
-      "enabled": false
+      "labels": [
+        "dependencies",
+        "major"
+      ],
+      "separateMultipleMajor": true,
+      "prCreation": "immediate"
     },
     {
       "matchDatasources": [

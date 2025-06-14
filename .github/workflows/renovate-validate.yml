@@ -3,13 +3,6 @@ name: renovate-config-validation
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - '**/renovate.json'
-      - '**/renovate.json5'
-      - '.github/renovate.json'
-      - '.gitlab/renovate.json'
-      - '.renovaterc.json'
-      - '.renovaterc'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

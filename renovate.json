@@ -22,12 +22,8 @@
       "matchStrings": [
         "ARG (?<depName>YQ|AWS_CLI|B2_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "github-releases",
-      "depNameMapping": {
-        "YQ": "mikefarah/yq",
-        "AWS_CLI": "aws/aws-cli",
-        "B2_CLI": "Backblaze/B2_Command_Line_Tool"
-      },
+      "datasourceTemplate": "github-releases",
+      "lookupNameTemplate": "{{#if depName == 'YQ'}}mikefarah/yq{{else if depName == 'AWS_CLI'}}aws/aws-cli{{else}}Backblaze/B2_Command_Line_Tool{{/if}}",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
@@ -35,31 +31,16 @@
       "matchStrings": [
         "ARG (?<depName>ANSIBLE|LINODE_CLI)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "pypi",
-      "depNameMapping": {
-        "ANSIBLE": "ansible",
-        "LINODE_CLI": "linode-cli"
-      }
+      "datasourceTemplate": "pypi",
+      "lookupNameTemplate": "{{#if depName == 'ANSIBLE'}}ansible{{else}}linode-cli{{/if}}"
     },
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
         "ARG (?<depName>PYTHON3_PIP|PYTHON3_VENV|PIPX|SSHPASS|JQ|RSYNC|OPENSSH_CLIENT|CURL|UNZIP|WGET)_VERSION=(?<currentValue>[^\\s#]+)"
       ],
-      "datasource": "repology",
-      "packageNameTemplate": "{{{depName}}}",
-      "depNameMapping": {
-        "PYTHON3_PIP": "python3-pip",
-        "PYTHON3_VENV": "python3-venv",
-        "PIPX": "pipx",
-        "SSHPASS": "sshpass",
-        "JQ": "jq",
-        "RSYNC": "rsync",
-        "OPENSSH_CLIENT": "openssh-client",
-        "CURL": "curl",
-        "UNZIP": "unzip",
-        "WGET": "wget"
-      }
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "{{#if depName == 'PYTHON3_PIP'}}python3-pip{{else if depName == 'PYTHON3_VENV'}}python3-venv{{else if depName == 'PIPX'}}pipx{{else if depName == 'SSHPASS'}}sshpass{{else if depName == 'JQ'}}jq{{else if depName == 'RSYNC'}}rsync{{else if depName == 'OPENSSH_CLIENT'}}openssh-client{{else if depName == 'CURL'}}curl{{else if depName == 'UNZIP'}}unzip{{else}}wget{{/if}}"
     }
   ],
   "packageRules": [

@@ -19,47 +19,44 @@
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG YQ_VERSION=(?<currentValue>.*?)\\s",
-        "ARG AWS_CLI_VERSION=(?<currentValue>.*?)\\s",
-        "ARG B2_CLI_VERSION=(?<currentValue>.*?)\\s"
+        "ARG (?<depName>YQ|AWS_CLI|B2_CLI)_VERSION=(?<currentValue>.*?)\\s"
       ],
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.*)$",
-      "depNameTemplate": {
-        "YQ_VERSION": "mikefarah/yq",
-        "AWS_CLI_VERSION": "aws/aws-cli",
-        "B2_CLI_VERSION": "Backblaze/B2_Command_Line_Tool"
+      "depNameMapping": {
+        "YQ": "mikefarah/yq",
+        "AWS_CLI": "aws/aws-cli",
+        "B2_CLI": "Backblaze/B2_Command_Line_Tool"
       }
     },
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG ANSIBLE_VERSION=(?<currentValue>.*?)\\s",
-        "ARG LINODE_CLI_VERSION=(?<currentValue>.*?)\\s"
+        "ARG (?<depName>ANSIBLE|LINODE_CLI)_VERSION=(?<currentValue>.*?)\\s"
       ],
       "datasourceTemplate": "pypi",
-      "depNameTemplate": {
-        "ANSIBLE_VERSION": "ansible",
-        "LINODE_CLI_VERSION": "linode-cli"
+      "depNameMapping": {
+        "ANSIBLE": "ansible",
+        "LINODE_CLI": "linode-cli"
       }
     },
     {
       "fileMatch": ["^Dockerfiles/.+/Dockerfile$"],
       "matchStrings": [
-        "ARG (?<package>[A-Z0-9_]+)_VERSION=(?<currentValue>.*?)\\s"
+        "ARG (?<depName>PYTHON3_PIP|PYTHON3_VENV|PIPX|SSHPASS|JQ|RSYNC|OPENSSH_CLIENT|CURL|UNZIP|WGET)_VERSION=(?<currentValue>.*?)\\s"
       ],
       "datasourceTemplate": "ubuntu",
-      "depNameTemplate": {
-        "PYTHON3_PIP_VERSION": "python3-pip",
-        "PYTHON3_VENV_VERSION": "python3-venv",
-        "PIPX_VERSION": "pipx",
-        "SSHPASS_VERSION": "sshpass",
-        "JQ_VERSION": "jq",
-        "RSYNC_VERSION": "rsync",
-        "OPENSSH_CLIENT_VERSION": "openssh-client",
-        "CURL_VERSION": "curl",
-        "UNZIP_VERSION": "unzip",
-        "WGET_VERSION": "wget"
+      "depNameMapping": {
+        "PYTHON3_PIP": "python3-pip",
+        "PYTHON3_VENV": "python3-venv",
+        "PIPX": "pipx",
+        "SSHPASS": "sshpass",
+        "JQ": "jq",
+        "RSYNC": "rsync",
+        "OPENSSH_CLIENT": "openssh-client",
+        "CURL": "curl",
+        "UNZIP": "unzip",
+        "WGET": "wget"
       },
       "versioningTemplate": "loose"
     }

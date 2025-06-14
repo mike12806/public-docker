@@ -86,8 +86,8 @@
         "ARG PYTHON3_PIP_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "python3-pip",
-      "datasourceTemplate": "debian",
-      "versioningTemplate": "debian"
+      "datasourceTemplate": "ubuntu",
+      "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
@@ -98,8 +98,8 @@
         "ARG PYTHON3_VENV_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "python3-venv",
-      "datasourceTemplate": "debian",
-      "versioningTemplate": "debian"
+      "datasourceTemplate": "ubuntu",
+      "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
@@ -110,8 +110,8 @@
         "ARG PIPX_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "pipx",
-      "datasourceTemplate": "debian",
-      "versioningTemplate": "debian"
+      "datasourceTemplate": "ubuntu",
+      "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
@@ -122,8 +122,8 @@
         "ARG SSHPASS_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "sshpass",
-      "datasourceTemplate": "debian",
-      "versioningTemplate": "debian"
+      "datasourceTemplate": "ubuntu",
+      "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
@@ -134,8 +134,8 @@
         "ARG JQ_VERSION=(?<currentValue>[^\\s#]+)"
       ],
       "depNameTemplate": "jq",
-      "datasourceTemplate": "debian",
-      "versioningTemplate": "debian"
+      "datasourceTemplate": "ubuntu",
+      "versioningTemplate": "ubuntu"
     },
     {
       "customType": "regex",
@@ -261,6 +261,13 @@
         "patch"
       ],
       "automerge": true
+    },
+    {
+      "matchDatasources": [
+        "ubuntu"
+      ],
+      "automerge": true,
+      "versioning": "ubuntu"
     },
     {
       "matchDatasources": [

@@ -16,7 +16,22 @@ env:
   FULL_IMAGE_NAME: ${{ github.repository_owner }}/public-docker/gh_hdc-runner
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: simple
+
   build-and-push:
+    needs: release-please
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -44,15 +59,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Bump version and create tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: patch
-          create_annotated_tag: true
-          tag_prefix: v
-
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -60,7 +66,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ steps.tag_version.outputs.new_version }}
+            type=raw,value=${{ needs.release-please.outputs.tag_name }}
             type=sha,format=long
 
       - name: Build and push Docker image
@@ -74,59 +80,3 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,new=true
           provenance: true
-
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          configuration: |
-            {
-              "template": "## What's Changed\n\n${UNCATEGORIZED}\n\n## Docker Image Details\n- Image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`\n- Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`\n- Git SHA: `${{ github.sha }}`",
-              "categories": [
-                {
-                  "title": "## 🚀 Features",
-                  "labels": ["feature", "enhancement"]
-                },
-                {
-                  "title": "## 🐛 Fixes",
-                  "labels": ["fix", "bug"]
-                },
-                {
-                  "title": "## 📝 Documentation",
-                  "labels": ["documentation", "docs"]
-                },
-                {
-                  "title": "## 🔄 Dependencies",
-                  "labels": ["dependencies", "dependency"]
-                },
-                {
-                  "title": "## 🛠 Maintenance",
-                  "labels": ["maintenance", "chore"]
-                },
-                {
-                  "title": "## Other Changes",
-                  "labels": []
-                }
-              ],
-              "ignore_labels": ["duplicate", "invalid", "question", "wontfix"]
-            }
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          name: ${{ steps.tag_version.outputs.new_version }}
-          body: ${{ steps.github_release.outputs.changelog }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Optional: Output info to logs
-      - name: Show Release Info
-        run: |
-          echo "Version: ${{ steps.tag_version.outputs.new_version }}"
-          echo "Tag: ${{ steps.tag_version.outputs.new_tag }}"
-          echo "Docker Image: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}"

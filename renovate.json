@@ -19,69 +19,15 @@
   "rebaseWhen": "auto",
   "packageRules": [
     {
-      "matchManagers": [
-        "dockerfile"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false
-    },
-    {
-      "matchManagers": [
-        "dockerfile"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
+      "matchDepNames": ["immich"],
       "automerge": true
     },
     {
-      "matchUpdateTypes": [
-        "major"
-      ],
+      "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false
-    },
-    {
-      "matchManagers": [
-        "helm-values"
-      ],
-      "matchFileNames": [
-        "image.tag"
-      ],
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchDepNames": [
-        "immich"
-      ],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
   ],
@@ -120,6 +66,5 @@
       "depNameTemplate": "immich",
       "versioningTemplate": "semver"
     }
-  ],
-  "ignoreTests": true
+  ]
 }

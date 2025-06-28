@@ -7,7 +7,7 @@ on:
 jobs:
   validate:
     name: validate-renovate-config
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: read

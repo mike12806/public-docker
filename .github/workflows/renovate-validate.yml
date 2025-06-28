@@ -7,7 +7,7 @@ on:
 jobs:
   validate:
     name: validate-renovate-config
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       pull-requests: read
@@ -22,7 +22,7 @@ jobs:
           node-version: 'lts/*'
 
       - name: Install Renovate CLI
-        run: npm install --global renovate
+        run: npm install --global renovate@latest
 
       - name: Validate Renovate config
         run: |

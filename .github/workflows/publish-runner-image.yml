@@ -2,7 +2,7 @@ name: Build and Publish Runner Image
 
 on:
   schedule:
-    - cron: '0 14 * * *' # 2 PM UTC every day
+    - cron: '0 */12 * * *' # 2 PM UTC every day
   push:
     branches:
       - main

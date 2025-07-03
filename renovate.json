@@ -19,15 +19,22 @@
   "rebaseWhen": "auto",
   "packageRules": [
     {
-      "matchDepNames": ["immich"],
+      "matchDepNames": [
+        "immich"
+      ],
       "automerge": true
     },
     {
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     }
   ],
@@ -56,8 +63,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        ".*\\.ya?ml$"
+      "managerFilePatterns": [
+        "/.*\\.ya?ml$/"
       ],
       "matchStrings": [
         "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"

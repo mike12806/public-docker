@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - 'Dockerfiles/Runner/Dockerfile'
+      - 'Dockerfiles/Kafka-Connect/Dockerfile'
   workflow_dispatch:
 
 env:

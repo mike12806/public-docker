@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      -  'Dockerfiles/**/Dockerfile'
+      -  'Dockerfiles/Runner/Dockerfile'
   workflow_dispatch:
 
 env:

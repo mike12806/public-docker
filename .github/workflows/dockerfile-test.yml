@@ -6,22 +6,22 @@ on:
 
 jobs:
   dockerfile-discovery:
-    name: discover
+    name: Discover Dockerfiles
     runs-on: ubuntu-latest
     outputs:
       paths: ${{ steps.find-paths.outputs.paths }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Find Dockerfile paths
         id: find-paths
         run: |
-          paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
+          paths=$(find Dockerfiles Kafka-Connect -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
           echo "paths=$paths" >> $GITHUB_OUTPUT
 
   test-docker-build:
-    name: build-test
+    name: Build and Test Docker Images
     needs: dockerfile-discovery
     runs-on: ubuntu-latest
     strategy:
@@ -64,8 +64,9 @@ jobs:
           # Test if container can run and execute basic commands
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
             docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} python3 --version
+          elif [[ "${{ matrix.dockerfile }}" == Kafka-Connect/* ]]; then
+            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} connect-distributed --version
           else
-            # For other Dockerfiles, we'll need to adjust the test command accordingly
             docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} ls /
           fi
           if [ $? -ne 0 ]; then

@@ -1,0 +1,135 @@
+name: Build and Publish Kafka Connect Image
+
+concurrency:
+  group: publish-kafka-connect
+  cancel-in-progress: true
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      -  'Dockerfiles/Kafka-Connect/Dockerfile'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: gh_hdc-kafka-connect
+  FULL_IMAGE_NAME: ${{ github.repository_owner }}/public-docker/gh_hdc-kafka-connect
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump version and create tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          create_annotated_tag: true
+          tag_prefix: v
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.tag_version.outputs.new_version }}
+            type=sha,format=long
+
+      - name: Build and push Docker image
+        id: build_push
+        uses: docker/build-push-action@v6
+        with:
+          context: Dockerfiles/Kafka-Connect
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,new=true
+          provenance: true
+
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: |
+            {
+              "template": "## What's Changed\n\n${UNCATEGORIZED}\n\n## Docker Image Details\n- Image: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}`\n- Latest tag: `${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:latest`\n- Git SHA: `${{ github.sha }}`",
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "## 📝 Documentation",
+                  "labels": ["documentation", "docs"]
+                },
+                {
+                  "title": "## 🔄 Dependencies",
+                  "labels": ["dependencies", "dependency"]
+                },
+                {
+                  "title": "## 🛠 Maintenance",
+                  "labels": ["maintenance", "chore"]
+                },
+                {
+                  "title": "## Other Changes",
+                  "labels": []
+                }
+              ],
+              "ignore_labels": ["duplicate", "invalid", "question", "wontfix"]
+            }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ steps.tag_version.outputs.new_version }}
+          body: ${{ steps.github_release.outputs.changelog }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: Output info to logs
+      - name: Show Release Info
+        run: |
+          echo "Version: ${{ steps.tag_version.outputs.new_version }}"
+          echo "Tag: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Docker Image: ${{ env.REGISTRY }}/${{ env.FULL_IMAGE_NAME }}:${{ steps.tag_version.outputs.new_version }}"

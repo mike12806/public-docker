@@ -35,10 +35,3 @@ RUN pipx ensurepath && \
     pipx install ansible && \
     pipx install linode-cli && \
     rm -rf /home/runner/.cache
-
-USER root
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-USER runner
-ENTRYPOINT ["/entrypoint.sh"]

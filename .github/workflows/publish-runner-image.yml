@@ -90,7 +90,7 @@ jobs:
           echo "Tag: ${{ needs.build-and-push.outputs.tag }}"
 
   release:
-    needs: build-matrix
+    needs: [build-matrix, build-and-push]
     runs-on: ubuntu-latest
     permissions:
       contents: write

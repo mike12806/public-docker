@@ -16,19 +16,16 @@ jobs:
       - id: find
         run: |
           files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
+          echo "Raw files found by find:"
+          find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile
           if [ -z "$files" ]; then
             echo "dockerfiles=[]" >> $GITHUB_OUTPUT
           else
             jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
             echo "dockerfiles=$(cat dockerfiles.json)" >> $GITHUB_OUTPUT
+            echo "Output as JSON:"
+            cat dockerfiles.json
           fi
-
-      - name: Debug: show found Dockerfiles
-        run: |
-          echo "Raw files found by find:"
-          find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile
-          echo "Output as JSON:"
-          cat dockerfiles.json || echo "dockerfiles.json does not exist"
 
       - id: found
         run: |
@@ -42,11 +39,7 @@ jobs:
           else
             echo "found=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Debug: show outputs
-        run: |
-          echo "dockerfiles output: ${{ steps.find.outputs.dockerfiles }}"
-          echo "found output: ${{ steps.found.outputs.found }}"
+          echo "found output: $found"
 
 
   build-and-test:

@@ -1,87 +1,43 @@
 name: Build and Publish Docker Images
 
 on:
-  schedule:
-    - cron: '0 */4 * * *'
-  push:
-    branches:
-      - main
-    paths:
-      - '**/Dockerfile'
-  pull_request:
-    paths:
-      - '**/Dockerfile'
   workflow_dispatch:
+  schedule:
+    - cron: '0 */4 * * *'  # every 4 hours
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfiles/**'
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
-  discover-changed-dockerfiles:
+  build-and-push:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      has_dockerfiles: ${{ steps.check.outputs.has_dockerfiles }}
+      matrix: ${{ steps.discover.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Find changed Dockerfiles
-        id: changed
+      - name: Discover Dockerfiles
+        id: discover
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base_ref="${{ github.event.pull_request.base.sha }}"
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            base_ref="HEAD~1"
-          else
-            base_ref=""
-          fi
+          files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
+          jq -n --arg files "$files" '$files | split("\n") | map(select(. != ""))' > dockerfiles.json
+          echo "matrix={\"dockerfile\":$(cat dockerfiles.json)}" >> $GITHUB_OUTPUT
 
-          if [[ -n "$base_ref" ]]; then
-            files=$(git diff --name-only $base_ref | grep -E 'Dockerfile$' || true)
-          else
-            files=$(find . -type f -iname Dockerfile)
-          fi
-
-          # Remove empty and deduplicate
-          files=$(echo "$files" | sort | uniq | sed '/^$/d')
-
-          # Output as JSON array for matrix
-          if [[ -z "$files" ]]; then
-            echo '[]' > dockerfiles.json
-          else
-            jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
-          fi
-
-      - name: Set matrix output
-        id: set-matrix
-        run: |
-          files=$(cat dockerfiles.json)
-          echo "matrix={\"dockerfile\":$files}" >> $GITHUB_OUTPUT
-
-      - name: Set has_dockerfiles output
-        id: check
-        run: |
-          files=$(cat dockerfiles.json)
-          if [[ "$files" == "[]" ]]; then
-            echo "has_dockerfiles=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_dockerfiles=true" >> $GITHUB_OUTPUT
-          fi
-
-  build-and-push:
-    needs: discover-changed-dockerfiles
-    if: needs.discover-changed-dockerfiles.outputs.has_dockerfiles == 'true'
+  build-matrix:
+    needs: build-and-push
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build-and-push.outputs.matrix) }}
     permissions:
       contents: write
       packages: write
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.discover-changed-dockerfiles.outputs.matrix) }}
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
@@ -95,9 +51,7 @@ jobs:
         id: meta
         run: |
           context_path=$(dirname "${{ matrix.dockerfile }}")
-          # Remove leading ./ from context path
-          image_name=$(echo "$context_path" | sed 's|^\./||' | tr '/.' '-')
-          # Default to 'docker' if context_path is root
+          image_name=$(echo "$context_path" | sed 's|^Dockerfiles/||' | tr '/.' '-')
           if [[ -z "$image_name" ]]; then image_name="docker"; fi
           echo "context_path=$context_path" >> $GITHUB_OUTPUT
           echo "image_name=$image_name" >> $GITHUB_OUTPUT
@@ -117,5 +71,4 @@ jobs:
           provenance: true
 
       - name: Show Image Info
-        run: |
-          echo "Image: ${{ steps.tags.outputs.tags }}"
+        run: echo "Image: ${{ steps.tags.outputs.tags }}"

@@ -72,7 +72,7 @@ jobs:
           file: "${{ matrix.dockerfile }}"
           push: true
           tags: "${{ steps.tags.outputs.tags }}"
-          provenance: true
+          provenance: "true"
 
       - name: Show Image Info
         run: echo "Image: ${{ steps.tags.outputs.tags }}"

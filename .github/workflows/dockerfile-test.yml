@@ -30,7 +30,6 @@ jobs:
 
   test-docker-build:
     needs: dockerfile-discovery
-    if: ${{ fromJson(needs.dockerfile-discovery.outputs.matrix).dockerfile != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

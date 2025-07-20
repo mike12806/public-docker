@@ -52,7 +52,7 @@ jobs:
         id: meta
         run: |
           context_path=$(dirname "${{ matrix.dockerfile }}")
-          image_name=$(echo "$context_path" | sed 's|^Dockerfiles/||' | tr '/.' '-')
+          image_name=$(echo "$context_path" | sed 's|^Dockerfiles/||' | tr '/.' '-' | tr '[:upper:]' '[:lower:]')
           if [[ -z "$image_name" ]]; then image_name="docker"; fi
           echo "context_path=$context_path" >> $GITHUB_OUTPUT
           echo "image_name=$image_name" >> $GITHUB_OUTPUT

@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       paths: ${{ steps.find-paths.outputs.paths }}
+      has_dockerfiles: ${{ steps.check.outputs.has_dockerfiles }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,9 +21,19 @@ jobs:
           paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
           echo "paths=$paths" >> $GITHUB_OUTPUT
 
+      - name: Check if any dockerfiles
+        id: check
+        run: |
+          if [[ $(jq length <<<"${{ steps.find-paths.outputs.paths }}") -gt 0 ]]; then
+            echo "has_dockerfiles=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_dockerfiles=false" >> $GITHUB_OUTPUT
+          fi
+
   test-docker-build:
     name: build-test
     needs: dockerfile-discovery
+    if: needs.dockerfile-discovery.outputs.has_dockerfiles == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:

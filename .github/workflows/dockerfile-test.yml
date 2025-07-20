@@ -23,6 +23,13 @@ jobs:
             echo "dockerfiles=$(cat dockerfiles.json)" >> $GITHUB_OUTPUT
           fi
 
+      - name: Debug: show found Dockerfiles
+        run: |
+          echo "Raw files found by find:"
+          find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile
+          echo "Output as JSON:"
+          cat dockerfiles.json || echo "dockerfiles.json does not exist"
+
       - id: found
         run: |
           if [ -f dockerfiles.json ]; then
@@ -36,6 +43,10 @@ jobs:
             echo "found=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Debug: show outputs
+        run: |
+          echo "dockerfiles output: ${{ steps.find.outputs.dockerfiles }}"
+          echo "found output: ${{ steps.found.outputs.found }}"
 
 
   build-and-test:

@@ -5,69 +5,67 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  dockerfile-discovery:
-    name: discover
+  discover-dockerfiles:
     runs-on: ubuntu-latest
     outputs:
-      paths: ${{ steps.find-paths.outputs.paths }}
-      has_dockerfiles: ${{ steps.check.outputs.has_dockerfiles }}
+      dockerfiles: ${{ steps.find.outputs.dockerfiles }}
+      found: ${{ steps.found.outputs.found }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Find Dockerfile paths
-        id: find-paths
+      - uses: actions/checkout@v4
+
+      - id: find
         run: |
-          paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
-          echo "paths=$paths" >> $GITHUB_OUTPUT
-      - name: Check if any dockerfiles
-        id: check
-        run: |
-          count=$(jq length <<<"${{ steps.find-paths.outputs.paths }}")
-          if [[ $count -gt 0 ]]; then
-            echo "has_dockerfiles=true" >> $GITHUB_OUTPUT
+          files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
+          if [ -z "$files" ]; then
+            echo "dockerfiles=[]" >> $GITHUB_OUTPUT
           else
-            echo "has_dockerfiles=false" >> $GITHUB_OUTPUT
+            jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
+            echo "dockerfiles=$(cat dockerfiles.json)" >> $GITHUB_OUTPUT
           fi
 
-  test-docker-build:
-    name: build-test
-    needs: dockerfile-discovery
-    if: needs.dockerfile-discovery.outputs.has_dockerfiles == 'true'
+      - id: found
+        run: |
+          found=$(jq length dockerfiles.json)
+          if [ "$found" -gt 0 ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-test:
+    needs: discover-dockerfiles
+    if: needs.discover-dockerfiles.outputs.found == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dockerfile: ${{ fromJson(needs.dockerfile-discovery.outputs.paths) }}
+        dockerfile: ${{ fromJson(needs.discover-dockerfiles.outputs.dockerfiles) }}
       fail-fast: false
-    permissions:
-      contents: read
-      pull-requests: read
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Get image name
-        id: image-name
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - id: imgname
         run: |
           name=$(dirname "${{ matrix.dockerfile }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           echo "name=$name" >> $GITHUB_OUTPUT
-      - name: Get context path
-        id: context_path
+
+      - id: context
         run: |
-          context_path=$(dirname "${{ matrix.dockerfile }}")
-          echo "path=$context_path" >> $GITHUB_OUTPUT
-      - name: Build image
-        uses: docker/build-push-action@v6
+          context=$(dirname "${{ matrix.dockerfile }}")
+          echo "context=$context" >> $GITHUB_OUTPUT
+
+      - uses: docker/build-push-action@v6
         with:
-          context: "${{ github.workspace }}/${{ steps.context_path.outputs.path }}"
+          context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
           file: "${{ github.workspace }}/${{ matrix.dockerfile }}"
           push: false
           load: true
-          tags: "test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
-      - name: Smoke test: container runs with default command or shell
+          tags: "test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
+
+      - name: Smoke test
         run: |
-          image_tag="test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
+          image_tag="test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
             docker run --rm "$image_tag" python3 --version
             exit $?
@@ -78,4 +76,17 @@ jobs:
             exit 0
           fi
           if [ $result -eq 127 ]; then
-           
+            echo "No shell, try default entrypoint"
+            timeout 10 docker run --rm "$image_tag"
+            rc=$?
+            if [ $rc -eq 124 ]; then
+              echo "Timeout"
+              exit 1
+            elif [ $rc -ne 0 ]; then
+              echo "Exited nonzero"
+              exit 1
+            fi
+            exit 0
+          fi
+          echo "Unknown failure"
+          exit 1

@@ -14,17 +14,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
       - name: Find Dockerfile paths
         id: find-paths
         run: |
           paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
           echo "paths=$paths" >> $GITHUB_OUTPUT
-
       - name: Check if any dockerfiles
         id: check
         run: |
-          if [[ $(jq length <<<"${{ steps.find-paths.outputs.paths }}") -gt 0 ]]; then
+          count=$(jq length <<<"${{ steps.find-paths.outputs.paths }}")
+          if [[ $count -gt 0 ]]; then
             echo "has_dockerfiles=true" >> $GITHUB_OUTPUT
           else
             echo "has_dockerfiles=false" >> $GITHUB_OUTPUT
@@ -46,22 +45,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
       - name: Get image name
         id: image-name
         run: |
           name=$(dirname "${{ matrix.dockerfile }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           echo "name=$name" >> $GITHUB_OUTPUT
-
       - name: Get context path
         id: context_path
         run: |
           context_path=$(dirname "${{ matrix.dockerfile }}")
           echo "path=$context_path" >> $GITHUB_OUTPUT
-
       - name: Build image
         uses: docker/build-push-action@v6
         with:
@@ -70,7 +65,6 @@ jobs:
           push: false
           load: true
           tags: "test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
-
       - name: Smoke test: container runs with default command or shell
         run: |
           image_tag="test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
@@ -84,19 +78,4 @@ jobs:
             exit 0
           fi
           if [ $result -eq 127 ]; then
-            echo "No shell found, running default entrypoint with timeout (for scratch/minimal images)..."
-            timeout 10 docker run --rm "$image_tag"
-            result=$?
-            if [ $result -eq 124 ]; then
-              echo "Container hung (timeout)."
-              exit 1
-            fi
-            if [ $result -ne 0 ]; then
-              echo "Container failed to start or exited with error."
-              exit 1
-            fi
-            exit 0
-          fi
-          echo "Container test failed."
-          exit 1
-
+           

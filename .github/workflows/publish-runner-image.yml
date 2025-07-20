@@ -24,8 +24,8 @@ jobs:
         id: discover
         run: |
           files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
-          jq -n --arg files "$files" '$files | split("\n") | map(select(. != ""))' > dockerfiles.json
-          echo "matrix={\"dockerfile\":$(cat dockerfiles.json)}" >> $GITHUB_OUTPUT
+          matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1] | {dockerfile: .}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   build-matrix:
     needs: build-and-push

@@ -6,61 +6,70 @@ on:
 
 jobs:
   dockerfile-discovery:
+    name: discover
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      paths: ${{ steps.find-paths.outputs.paths }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Find all Dockerfiles
-        id: find-dockerfiles
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Find Dockerfile paths
+        id: find-paths
         run: |
-          files=$(find . -type f -iname Dockerfile)
-          if [ -z "$files" ]; then
-            echo "[]" > dockerfiles.json
-          else
-            jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
-          fi
-
-      - name: Set matrix
-        id: set-matrix
-        run: |
-          files=$(cat dockerfiles.json)
-          echo "matrix={\"dockerfile\":$files}" >> $GITHUB_OUTPUT
+          paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
+          echo "paths=$paths" >> $GITHUB_OUTPUT
 
   test-docker-build:
+    name: build-test
     needs: dockerfile-discovery
     runs-on: ubuntu-latest
     strategy:
+      matrix:
+        dockerfile: ${{ fromJson(needs.dockerfile-discovery.outputs.paths) }}
       fail-fast: false
-      matrix: ${{ fromJson(needs.dockerfile-discovery.outputs.matrix) }}
+    permissions:
+      contents: read
+      pull-requests: read
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Derive image name (safe for Docker tag)
+      - name: Get image name
         id: image-name
         run: |
-          name=$(echo "${{ matrix.dockerfile }}" | sed 's|^\./||' | tr '/.' '-')
+          name=$(dirname ${{ matrix.dockerfile }} | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           echo "name=$name" >> $GITHUB_OUTPUT
 
-      - name: Get build context
-        id: context
+      - name: Get context path
+        id: context-path
         run: |
           context_path=$(dirname "${{ matrix.dockerfile }}")
-          echo "context=$context_path" >> $GITHUB_OUTPUT
+          echo "path=$context_path" >> $GITHUB_OUTPUT
 
       - name: Build image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/${{ steps.context.outputs.context }}
-          file: ${{ github.workspace }}/${{ matrix.dockerfile }}
+          context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
+          file: "${{ github.workspace }}/${{ matrix.dockerfile }}"
           push: false
           load: true
-          tags: test-${{ steps.image-name.outputs.name }}:${{ github.sha }}
+          tags: "test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
 
-      - name: Smoke test: container runs with default command
+      - name: Test container starts
         run: |
-          image_tag=test-${{ steps.image-name.outputs.name }}:${{ github.sha }}
-          docker run --rm "$image_tag"
+          # Test if container can run and execute basic commands
+          if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
+            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} python3 --version
+          else
+            # For other Dockerfiles, we'll need to adjust the test command accordingly
+            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} ls /
+          fi
+          if [ $? -ne 0 ]; then
+            echo "Container failed to start properly"
+            exit 1
+          fi

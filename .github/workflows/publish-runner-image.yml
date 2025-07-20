@@ -88,3 +88,65 @@ jobs:
           echo "Image: ${{ steps.tags.outputs.tags }}"
           echo "Version: ${{ needs.build-and-push.outputs.version }}"
           echo "Tag: ${{ needs.build-and-push.outputs.tag }}"
+
+  release:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: |
+            {
+              "template": "## What's Changed\n\n${UNCATEGORIZED}\n\n## Docker Image Details\n- Repository: `${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker`\n- Version: `${{ needs.build-and-push.outputs.version }}`\n- Git SHA: `${{ github.sha }}`",
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "## 📝 Documentation",
+                  "labels": ["documentation", "docs"]
+                },
+                {
+                  "title": "## 🔄 Dependencies",
+                  "labels": ["dependencies", "dependency"]
+                },
+                {
+                  "title": "## 🛠 Maintenance",
+                  "labels": ["maintenance", "chore"]
+                },
+                {
+                  "title": "## Other Changes",
+                  "labels": []
+                }
+              ],
+              "ignore_labels": ["duplicate", "invalid", "question", "wontfix"]
+            }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-and-push.outputs.tag }}
+          name: ${{ needs.build-and-push.outputs.version }}
+          body: ${{ steps.github_release.outputs.changelog }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show Release Info
+        run: |
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          echo "Tag: ${{ needs.build-and-push.outputs.tag }}"

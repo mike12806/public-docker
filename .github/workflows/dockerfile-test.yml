@@ -22,7 +22,7 @@ jobs:
             echo "dockerfiles=[]" >> $GITHUB_OUTPUT
           else
             jq -n --arg files "$files" '$files | split("\n")' > dockerfiles.json
-            echo "dockerfiles=$(cat dockerfiles.json)" >> $GITHUB_OUTPUT
+            echo "dockerfiles=$(jq -c . dockerfiles.json)" >> $GITHUB_OUTPUT
             echo "Output as JSON:"
             cat dockerfiles.json
           fi

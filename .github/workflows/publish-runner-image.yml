@@ -15,10 +15,23 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
+      version: ${{ steps.tag_version.outputs.new_version }}
+      tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Bump version and create tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          create_annotated_tag: true
+          tag_prefix: v
 
       - name: Discover Dockerfiles
         id: discover
@@ -60,7 +73,7 @@ jobs:
       - name: Set tags
         id: tags
         run: |
-          echo "tags=${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:latest,${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "tags=${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:latest,${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ needs.build-and-push.outputs.version }},${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -73,3 +86,67 @@ jobs:
       - name: Show Image Info
         run: |
           echo "Image: ${{ steps.tags.outputs.tags }}"
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          echo "Tag: ${{ needs.build-and-push.outputs.tag }}"
+
+  release:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: |
+            {
+              "template": "## What's Changed\n\n${UNCATEGORIZED}\n\n## Docker Image Details\n- Repository: `${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker`\n- Version: `${{ needs.build-and-push.outputs.version }}`\n- Git SHA: `${{ github.sha }}`",
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["feature", "enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["fix", "bug"]
+                },
+                {
+                  "title": "## 📝 Documentation",
+                  "labels": ["documentation", "docs"]
+                },
+                {
+                  "title": "## 🔄 Dependencies",
+                  "labels": ["dependencies", "dependency"]
+                },
+                {
+                  "title": "## 🛠 Maintenance",
+                  "labels": ["maintenance", "chore"]
+                },
+                {
+                  "title": "## Other Changes",
+                  "labels": []
+                }
+              ],
+              "ignore_labels": ["duplicate", "invalid", "question", "wontfix"]
+            }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-and-push.outputs.tag }}
+          name: ${{ needs.build-and-push.outputs.version }}
+          body: ${{ steps.github_release.outputs.changelog }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show Release Info
+        run: |
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          echo "Tag: ${{ needs.build-and-push.outputs.tag }}"

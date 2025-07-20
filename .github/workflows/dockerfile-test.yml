@@ -51,13 +51,14 @@ jobs:
           context_path=$(dirname "${{ matrix.dockerfile }}")
           echo "path=$context_path" >> $GITHUB_OUTPUT
 
-      - name: Build Docker image
+      - name: Build image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/${{ steps.context-path.outputs.path }}
+          context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
+          file: "${{ github.workspace }}/${{ matrix.dockerfile }}"
           push: false
           load: true
-          tags: test-${{ steps.image-name.outputs.name }}:${{ github.sha }}
+          tags: "test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
 
       - name: Test container starts
         run: |

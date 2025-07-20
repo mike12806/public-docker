@@ -5,71 +5,99 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  dockerfile-discovery:
-    name: discover
+  discover-dockerfiles:
     runs-on: ubuntu-latest
     outputs:
-      paths: ${{ steps.find-paths.outputs.paths }}
+      dockerfiles: ${{ steps.find.outputs.dockerfiles }}
+      found: ${{ steps.found.outputs.found }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Find Dockerfile paths
-        id: find-paths
-        run: |
-          paths=$(find Dockerfiles -name Dockerfile -type f | jq -R -s -c 'split("\n")[:-1]')
-          echo "paths=$paths" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
 
-  test-docker-build:
-    name: build-test
-    needs: dockerfile-discovery
+      - id: find
+        run: |
+          files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
+          echo "Raw files found by find:"
+          find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile
+          if [ -z "$files" ]; then
+            echo "dockerfiles=[]" >> $GITHUB_OUTPUT
+          else
+            jq -n --arg files "$files" '$files | split("\n")' > dockerfiles.json
+            echo "dockerfiles=$(jq -c . dockerfiles.json)" >> $GITHUB_OUTPUT
+            echo "Output as JSON:"
+            cat dockerfiles.json
+          fi
+
+      - id: found
+        run: |
+          if [ -f dockerfiles.json ]; then
+            found=$(jq length dockerfiles.json)
+          else
+            found=0
+          fi
+          if [ "$found" -gt 0 ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+          echo "found output: $found"
+
+
+  build-and-test:
+    needs: discover-dockerfiles
+    if: needs.discover-dockerfiles.outputs.found == 'true'
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        dockerfile: ${{ fromJson(needs.dockerfile-discovery.outputs.paths) }}
       fail-fast: false
-    permissions:
-      contents: read
-      pull-requests: read
+      matrix:
+        dockerfile: ${{ fromJson(needs.discover-dockerfiles.outputs.dockerfiles) }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Get image name
-        id: image-name
+      - id: imgname
         run: |
-          name=$(dirname ${{ matrix.dockerfile }} | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          name=$(dirname "${{ matrix.dockerfile }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           echo "name=$name" >> $GITHUB_OUTPUT
 
-      - name: Get context path
-        id: context-path
+      - id: context
         run: |
-          context_path=$(dirname "${{ matrix.dockerfile }}")
-          echo "path=$context_path" >> $GITHUB_OUTPUT
+          context=$(dirname "${{ matrix.dockerfile }}")
+          echo "context=$context" >> $GITHUB_OUTPUT
 
-      - name: Build image
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
           file: "${{ github.workspace }}/${{ matrix.dockerfile }}"
           push: false
           load: true
-          tags: "test-${{ steps.image-name.outputs.name }}:${{ github.sha }}"
+          tags: "test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
 
-      - name: Test container starts
+      - name: Smoke test
         run: |
-          # Test if container can run and execute basic commands
+          image_tag="test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
-            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} python3 --version
-          else
-            # For other Dockerfiles, we'll need to adjust the test command accordingly
-            docker run --rm test-${{ steps.image-name.outputs.name }}:${{ github.sha }} ls /
+            docker run --rm "$image_tag" python3 --version
+            exit $?
           fi
-          if [ $? -ne 0 ]; then
-            echo "Container failed to start properly"
-            exit 1
+          docker run --rm --entrypoint /bin/sh "$image_tag" -c "ls /"
+          result=$?
+          if [ $result -eq 0 ]; then
+            exit 0
           fi
+          if [ $result -eq 127 ]; then
+            echo "No shell, try default entrypoint"
+            timeout 10 docker run --rm "$image_tag"
+            rc=$?
+            if [ $rc -eq 124 ]; then
+              echo "Timeout"
+              exit 1
+            elif [ $rc -ne 0 ]; then
+              echo "Exited nonzero"
+              exit 1
+            fi
+            exit 0
+          fi
+          echo "Unknown failure"
+          exit 1

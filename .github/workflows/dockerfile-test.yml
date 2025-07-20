@@ -16,7 +16,11 @@ jobs:
         id: find-dockerfiles
         run: |
           files=$(find . -type f -iname Dockerfile)
-          jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
+          if [ -z "$files" ]; then
+            echo "[]" > dockerfiles.json
+          else
+            jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
+          fi
 
       - name: Set matrix
         id: set-matrix
@@ -26,6 +30,7 @@ jobs:
 
   test-docker-build:
     needs: dockerfile-discovery
+    if: ${{ fromJson(needs.dockerfile-discovery.outputs.matrix).dockerfile != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

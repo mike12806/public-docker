@@ -30,7 +30,11 @@ jobs:
 
       - id: found
         run: |
-          found=$(jq length dockerfiles.json)
+          if [ -f dockerfiles.json ]; then
+            found=$(jq length dockerfiles.json)
+          else
+            found=0
+          fi
           if [ "$found" -gt 0 ]; then
             echo "found=true" >> $GITHUB_OUTPUT
           else
@@ -41,6 +45,7 @@ jobs:
         run: |
           echo "dockerfiles output: ${{ steps.find.outputs.dockerfiles }}"
           echo "found output: ${{ steps.found.outputs.found }}"
+
 
   build-and-test:
     needs: discover-dockerfiles

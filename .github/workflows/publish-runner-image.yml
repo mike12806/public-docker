@@ -21,23 +21,30 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_dockerfiles: ${{ steps.check.outputs.has_dockerfiles }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Find changed Dockerfiles
         id: changed
         run: |
-          # Find changed Dockerfiles compared to main (for PRs) or last commit (for pushes)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             base_ref="${{ github.event.pull_request.base.sha }}"
-          else
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
             base_ref="HEAD~1"
+          else
+            base_ref=""
           fi
-          files=$(git diff --name-only $base_ref | grep -E 'Dockerfile$' || true)
-          # If empty, fallback to current Dockerfiles for scheduled/workflow_dispatch
-          if [[ -z "$files" ]]; then
+
+          if [[ -n "$base_ref" ]]; then
+            files=$(git diff --name-only $base_ref | grep -E 'Dockerfile$' || true)
+          else
             files=$(find . -type f -iname Dockerfile)
           fi
+
+          # Remove empty and deduplicate
+          files=$(echo "$files" | sort | uniq | sed '/^$/d')
+
           # Output as JSON array for matrix
           if [[ -z "$files" ]]; then
             echo '[]' > dockerfiles.json
@@ -45,15 +52,25 @@ jobs:
             jq -n --arg files "$files" '$files | split("\n")[:-1]' > dockerfiles.json
           fi
 
-      - name: Set matrix
+      - name: Set matrix output
         id: set-matrix
         run: |
           files=$(cat dockerfiles.json)
           echo "matrix={\"dockerfile\":$files}" >> $GITHUB_OUTPUT
 
+      - name: Set has_dockerfiles output
+        id: check
+        run: |
+          files=$(cat dockerfiles.json)
+          if [[ "$files" == "[]" ]]; then
+            echo "has_dockerfiles=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_dockerfiles=true" >> $GITHUB_OUTPUT
+          fi
+
   build-and-push:
     needs: discover-changed-dockerfiles
-    if: ${{ fromJson(needs.discover-changed-dockerfiles.outputs.matrix).dockerfile != '[]' }}
+    if: needs.discover-changed-dockerfiles.outputs.has_dockerfiles == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -61,10 +78,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover-changed-dockerfiles.outputs.matrix) }}
-
-    env:
-      # Each image will use its own tag logic below
-      DOCKERFILE_PATH: ${{ matrix.dockerfile }}
 
     steps:
       - uses: actions/checkout@v4
@@ -81,28 +94,28 @@ jobs:
       - name: Derive image name and context
         id: meta
         run: |
-          context_path=$(dirname "${{ env.DOCKERFILE_PATH }}")
-          # Use a safe image name based on path
+          context_path=$(dirname "${{ matrix.dockerfile }}")
+          # Remove leading ./ from context path
           image_name=$(echo "$context_path" | sed 's|^\./||' | tr '/.' '-')
+          # Default to 'docker' if context_path is root
+          if [[ -z "$image_name" ]]; then image_name="docker"; fi
           echo "context_path=$context_path" >> $GITHUB_OUTPUT
           echo "image_name=$image_name" >> $GITHUB_OUTPUT
 
       - name: Set tags
         id: tags
         run: |
-          # You can adjust tagging logic as needed (sha, date, etc)
           echo "tags=${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:latest,${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: "${{ steps.meta.outputs.context_path }}"
-          file: "${{ env.DOCKERFILE_PATH }}"
+          file: "${{ matrix.dockerfile }}"
           push: true
           tags: "${{ steps.tags.outputs.tags }}"
           provenance: true
 
-      # Optionally, output info for logs
       - name: Show Image Info
         run: |
           echo "Image: ${{ steps.tags.outputs.tags }}"

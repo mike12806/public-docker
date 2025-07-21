@@ -12,7 +12,7 @@ header {
 }
 
 header h1 {
-    color: #fff;
+    color: #fff !important;
 }
 
 .company {

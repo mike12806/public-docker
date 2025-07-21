@@ -7,12 +7,15 @@ body {
     max-width: 900px;
 }
 
+
 header {
     background: linear-gradient(45deg, #4e73df, #1cc88a);
 }
 
-header h1 {
+header h1.display-4.mb-1 {
     color: #fff !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
 }
 
 .company {

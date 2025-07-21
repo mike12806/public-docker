@@ -5,33 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Michael E. Faherty - Resume</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="bootstrap.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Michael E. Faherty</h1>
-      <p class="subtitle">Insurance &amp; Innovation Professional</p>
+<body class="bg-light">
+  <div class="container my-5">
+    <header class="text-center py-5 text-white bg-primary bg-gradient rounded shadow-sm mb-4">
+      <h1 class="display-4 mb-1">Michael E. Faherty</h1>
+      <p class="lead mb-0">Insurance &amp; Innovation Professional</p>
     </header>
 
-    <section>
-      <h2>Education</h2>
-      <div class="education">
+    <section class="mb-5">
+      <h2 class="border-bottom pb-2 mb-4">Education</h2>
+        <div class="mb-3">
         <h3>The Institutes</h3>
         <p>CPCU, API, AIC, and AIT Designations (2013-2018)</p>
       </div>
-      <div class="education">
+        <div class="mb-3">
         <h3>Suffolk University - College of Arts and Sciences</h3>
         <p>Bachelor of Science in Sociology/Criminology and Law - May 2009</p>
       </div>
     </section>
 
-    <section>
-      <h2>Professional Experience</h2>
-      <article>
-        <h3>Product Owner III - Innovation</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Boston, MA (June 2023 &ndash; Present)</p>
-        <ul>
+    <section class="mb-5">
+      <h2 class="border-bottom pb-2 mb-4">Professional Experience</h2>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Product Owner III - Innovation</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Boston, MA (June 2023 &ndash; Present)</p>
+          <ul class="mb-0">
           <li>Managed multiple workstreams supporting the Certainly brand portfolio within Solaria Labs.</li>
           <li>Spearheaded initiatives across the Certainly platform including infrastructure modernization and product experimentation.</li>
           <li>Implemented Auth0 for compliance, coordinating cross-functional teams and vendors.</li>
@@ -39,61 +41,72 @@
           <li>Developed and launched the Competitor Filing Assistant tool.</li>
           <li>Enabled GPU capabilities on Solaria&rsquo;s EKS mega cluster to support AI initiatives.</li>
           <li>Advocated for operational excellence through improved monitoring and incident management.</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
 
-      <article>
-        <h3>Product Owner II - Innovation</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Boston, MA (January 2020 &ndash; June 2023)</p>
-        <ul>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Product Owner II - Innovation</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Boston, MA (January 2020 &ndash; June 2023)</p>
+          <ul class="mb-0">
           <li>Managed workstreams for Certainly personal lines products and platform.</li>
           <li>Led migration of Certainly Renters to Simple Renters, creating technical and strategic roadmaps.</li>
           <li>Implemented a native Spanish experience on Certainly Renters with minimal platform impact.</li>
           <li>Oversaw day-to-day platform operations and production readiness.</li>
           <li>Expanded technical knowledge to bridge stakeholder groups and upgrade Kubernetes infrastructure.</li>
           <li>Pivoted strategy to support development of Liberty Mutual&rsquo;s billing platform.</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
 
-      <article>
-        <h3>Sr. Analyst &ndash; Portfolio Management (Claims Incubator Rotation)</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Boston, MA (August 2019 &ndash; January 2020)</p>
-        <ul>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Sr. Analyst &ndash; Portfolio Management (Claims Incubator Rotation)</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Boston, MA (August 2019 &ndash; January 2020)</p>
+          <ul class="mb-0">
           <li>Developed innovative claims processes supporting new subscription-based insurance products.</li>
           <li>Created a telephony strategy allowing cross-branded customer service.</li>
           <li>Scoped MVP solutions for app-based home maintenance offerings.</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
 
-      <article>
-        <h3>Claims Team Manager &ndash; CORE Casualty Claims Team</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Danvers, MA (May 2013 &ndash; August 2019)</p>
-        <ul>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Claims Team Manager &ndash; CORE Casualty Claims Team</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Danvers, MA (May 2013 &ndash; August 2019)</p>
+          <ul class="mb-0">
           <li>Led adoption of new processes including transition to a paperless environment.</li>
           <li>Achieved highest productivity metrics among comparable teams.</li>
           <li>Developed direct reports into roles of greater responsibility.</li>
           <li>Received multiple recognitions for leadership and continuous improvement.</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
 
-      <article>
-        <h3>Claims Specialist III</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Danvers, MA (May 2011 &ndash; May 2013)</p>
-        <ul>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Claims Specialist III</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Danvers, MA (May 2011 &ndash; May 2013)</p>
+          <ul class="mb-0">
           <li>Maintained caseload of over 150 bodily injury claims.</li>
           <li>Presented continuous improvement ideas to management.</li>
           <li>Selected for the company&rsquo;s Pathways to Leadership program.</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
 
-      <article>
-        <h3>Additional Roles</h3>
-        <p class="company">Liberty Mutual Insurance Group &ndash; Various Locations (2010 &ndash; 2011)</p>
-        <ul>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3 class="h5 card-title">Additional Roles</h3>
+          <p class="company card-subtitle mb-2 text-muted">Liberty Mutual Insurance Group &ndash; Various Locations (2010 &ndash; 2011)</p>
+          <ul class="mb-0">
           <li>Quality Assurance Specialist &ndash; APD</li>
           <li>Senior Customer Claims Representative &ndash; APD</li>
-        </ul>
-      </article>
+          </ul>
+        </div>
+      </div>
     </section>
   </div>
   <footer>

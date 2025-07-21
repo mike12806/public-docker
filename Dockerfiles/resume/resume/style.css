@@ -11,6 +11,10 @@ header {
     background: linear-gradient(45deg, #4e73df, #1cc88a);
 }
 
+header h1 {
+    color: #fff;
+}
+
 .company {
     font-weight: 600;
 }

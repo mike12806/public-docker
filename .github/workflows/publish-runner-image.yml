@@ -3,7 +3,7 @@ name: Build and Publish Docker Images
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */4 * * *'  # every 4 hours
+    - cron: '0 10 * * *'
   push:
     branches: [main]
     paths:

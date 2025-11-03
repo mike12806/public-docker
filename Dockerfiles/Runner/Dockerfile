@@ -1,5 +1,8 @@
 FROM ghcr.io/actions/actions-runner:2.329.0
 
+# CodeQL version to install
+ARG CODEQL_VERSION=2.23.3
+
 USER root
 
 RUN apt-get update -y && \
@@ -28,6 +31,27 @@ RUN apt-get update -y && \
     apt-get update -y && \
     apt-get install -y --no-install-recommends \
     docker-compose-plugin
+
+# Install CodeQL
+# Pinning to a specific version for reproducibility and to avoid SSL/network issues during build
+RUN set -e && \
+    bundle_tag_name="codeql-bundle-v${CODEQL_VERSION}" && \
+    echo "Downloading CodeQL bundle ${CODEQL_VERSION}..." && \
+    # Download the CodeQL bundle (with 5-minute timeout) \
+    curl -fsSL --max-time 300 "https://github.com/github/codeql-action/releases/download/${bundle_tag_name}/codeql-bundle-linux64.tar.gz" -o /tmp/codeql-bundle.tar.gz && \
+    # Create toolcache directory structure \
+    mkdir -p "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64" && \
+    echo "Unpacking the downloaded CodeQL bundle archive..." && \
+    tar -xzf /tmp/codeql-bundle.tar.gz -C "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64" && \
+    # Touch marker files \
+    touch "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64/pinned-version" && \
+    touch "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64.complete" && \
+    # Add CodeQL to PATH \
+    ln -s "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64/codeql/codeql" /usr/local/bin/codeql && \
+    # Cleanup \
+    rm -f /tmp/codeql-bundle.tar.gz && \
+    # Verify installation \
+    codeql --version
 
 USER runner
 

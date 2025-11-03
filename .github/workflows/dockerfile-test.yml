@@ -79,6 +79,7 @@ jobs:
           image_tag="test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
             docker run --rm "$image_tag" python3 --version
+            docker run --rm "$image_tag" codeql --version
             exit $?
           fi
           docker run --rm --entrypoint /bin/sh "$image_tag" -c "ls /"

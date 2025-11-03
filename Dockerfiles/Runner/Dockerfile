@@ -1,5 +1,8 @@
 FROM ghcr.io/actions/actions-runner:2.329.0
 
+# CodeQL version to install
+ARG CODEQL_VERSION=2.23.3
+
 USER root
 
 RUN apt-get update -y && \
@@ -32,7 +35,6 @@ RUN apt-get update -y && \
 # Install CodeQL
 # Pinning to a specific version for reproducibility and to avoid SSL/network issues during build
 RUN set -e && \
-    CODEQL_VERSION="2.23.3" && \
     bundle_tag_name="codeql-bundle-v${CODEQL_VERSION}" && \
     echo "Downloading CodeQL bundle ${CODEQL_VERSION}..." && \
     # Download the CodeQL bundle \

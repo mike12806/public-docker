@@ -37,7 +37,7 @@ RUN apt-get update -y && \
 RUN set -e && \
     bundle_tag_name="codeql-bundle-v${CODEQL_VERSION}" && \
     echo "Downloading CodeQL bundle ${CODEQL_VERSION}..." && \
-    # Download the CodeQL bundle (with 5 minute timeout) \
+    # Download the CodeQL bundle (with 5-minute timeout) \
     curl -fsSL --max-time 300 "https://github.com/github/codeql-action/releases/download/${bundle_tag_name}/codeql-bundle-linux64.tar.gz" -o /tmp/codeql-bundle.tar.gz && \
     # Create toolcache directory structure \
     mkdir -p "/opt/hostedtoolcache/CodeQL/${CODEQL_VERSION}/x64" && \

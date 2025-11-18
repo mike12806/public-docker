@@ -61,11 +61,11 @@ spec:
 
 A minimal kubectl image with curl added for additional flexibility in Kubernetes operations and API interactions.
 
-**Base Image:** `docker.io/bitnamilegacy/kubectl:1.33.4-debian-12-r0`
+**Base Image:** `docker.io/alpine/kubectl:1.33.4`
 
 **Included Tools:**
 - **kubectl** (v1.33.4) - Kubernetes command-line tool
-- **curl** - HTTP client for API calls and downloads
+- **curl** - HTTP client for API calls and downloads (included in base image)
 
 **Usage Example:**
 ```yaml

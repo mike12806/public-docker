@@ -1,1 +1,1 @@
-FROM docker.io/alpine/kubectl:1.33.4
+FROM docker.io/alpine/kubectl:1.34.2

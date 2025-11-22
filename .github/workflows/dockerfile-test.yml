@@ -11,7 +11,7 @@ jobs:
       dockerfiles: ${{ steps.find.outputs.dockerfiles }}
       found: ${{ steps.found.outputs.found }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - id: find
         run: |
@@ -52,7 +52,7 @@ jobs:
         dockerfile: ${{ fromJson(needs.discover-dockerfiles.outputs.dockerfiles) }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: docker/setup-buildx-action@v3
 

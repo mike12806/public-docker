@@ -59,12 +59,14 @@ spec:
 
 **Image:** `ghcr.io/mike12806/public-docker/kubectl`
 
-A minimal kubectl image with curl added for additional flexibility in Kubernetes operations and API interactions.
+A kubectl image with Redis tools for Kubernetes operations that require Redis interactions.
 
-**Base Image:** `docker.io/alpine/kubectl:1.33.4`
+**Base Image:** `docker.io/alpine/kubectl:1.34.2`
 
 **Included Tools:**
-- **kubectl** (v1.33.4) - Kubernetes command-line tool
+- **kubectl** (v1.34.2) - Kubernetes command-line tool
+- **redis-cli** - Redis command-line interface for Redis operations
+- **redis-server** - Redis server (available but not typically run in this image)
 - **curl** - HTTP client for API calls and downloads (included in base image)
 
 **Usage Example:**
@@ -73,7 +75,7 @@ A minimal kubectl image with curl added for additional flexibility in Kubernetes
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kubectl-job
+  name: kubectl-redis-job
 spec:
   template:
     spec:
@@ -85,53 +87,10 @@ spec:
 ```
 
 **Use Cases:**
-- Kubernetes maintenance jobs
+- Kubernetes maintenance jobs with Redis operations
 - CI/CD pipelines for Kubernetes deployments
-- Scripted Kubernetes operations requiring HTTP calls
-
----
-
-### 🗄️ Redis
-
-**Image:** `ghcr.io/mike12806/public-docker/redis`
-
-A Redis container based on the official Redis image, providing a high-performance in-memory data structure store.
-
-**Base Image:** `redis:8.4.0`
-
-**Included Tools:**
-- **Redis Server** (v8.4.0) - In-memory data store
-- **Redis CLI** - Command-line interface for Redis
-
-**Usage Example:**
-```yaml
-# In a Kubernetes Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-      - name: redis
-        image: ghcr.io/mike12806/public-docker/redis:latest
-        ports:
-        - containerPort: 6379
-```
-
-**Use Cases:**
-- In-memory data store and cache
-- Message broker and pub/sub
-- Session store for web applications
-- Real-time analytics
+- Scripted Kubernetes operations requiring Redis client access
+- Database migration or initialization scripts that interact with both Kubernetes and Redis
 
 ---
 

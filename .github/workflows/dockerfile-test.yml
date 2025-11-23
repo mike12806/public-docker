@@ -82,6 +82,11 @@ jobs:
             docker run --rm "$image_tag" codeql --version
             exit $?
           fi
+          if [[ "${{ matrix.dockerfile }}" == *"Kubectl"* ]]; then
+            echo "Testing kubectl image with Redis..."
+            docker run --rm --entrypoint /bin/sh "$image_tag" -c "kubectl version --client && redis-cli --version"
+            exit $?
+          fi
           docker run --rm --entrypoint /bin/sh "$image_tag" -c "ls /"
           result=$?
           if [ $result -eq 0 ]; then

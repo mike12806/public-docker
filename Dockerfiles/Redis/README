@@ -1,0 +1,35 @@
+# Redis
+
+A Redis container based on the official Redis image.
+
+**Base Image:** `redis:8.4.0`
+
+**Usage Example:**
+```yaml
+# In a Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: ghcr.io/mike12806/public-docker/redis:latest
+        ports:
+        - containerPort: 6379
+```
+
+**Use Cases:**
+- In-memory data store
+- Cache layer for applications
+- Message broker
+- Session store

@@ -91,6 +91,50 @@ spec:
 
 ---
 
+### 🗄️ Redis
+
+**Image:** `ghcr.io/mike12806/public-docker/redis`
+
+A Redis container based on the official Redis image, providing a high-performance in-memory data structure store.
+
+**Base Image:** `redis:8.4.0`
+
+**Included Tools:**
+- **Redis Server** (v8.4.0) - In-memory data store
+- **Redis CLI** - Command-line interface for Redis
+
+**Usage Example:**
+```yaml
+# In a Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: ghcr.io/mike12806/public-docker/redis:latest
+        ports:
+        - containerPort: 6379
+```
+
+**Use Cases:**
+- In-memory data store and cache
+- Message broker and pub/sub
+- Session store for web applications
+- Real-time analytics
+
+---
+
 ## 🔨 Building Images
 
 Images are automatically built and published when:

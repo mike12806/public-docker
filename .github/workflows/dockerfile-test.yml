@@ -80,6 +80,7 @@ jobs:
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
             docker run --rm "$image_tag" python3 --version
             docker run --rm "$image_tag" codeql --version
+            docker run --rm "$image_tag" psql --version
             exit $?
           fi
           if [[ "${{ matrix.dockerfile }}" == *"Kubectl"* ]]; then

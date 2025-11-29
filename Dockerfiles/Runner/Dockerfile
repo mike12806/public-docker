@@ -21,7 +21,7 @@ USER root
 # Base tooling
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip wget gpg xxd ca-certificates gnupg lsb-release && \
+      python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip wget gpg xxd ca-certificates gnupg lsb-release postgresql-client && \
     # AWS CLI v2
     curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
     unzip -q /tmp/awscliv2.zip -d /tmp && \

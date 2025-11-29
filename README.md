@@ -27,6 +27,7 @@ A feature-rich self-hosted GitHub Actions runner image designed for Kubernetes e
 - **Backblaze B2 CLI** - For B2 cloud storage operations
 - **yq** - YAML processor for parsing and manipulating YAML files
 - **jq** - JSON processor (from base image)
+- **psql** - PostgreSQL client for database operations
 - **sshpass** - Non-interactive SSH password authentication
 - **rsync** - File synchronization utility
 - **curl, wget** - HTTP clients for downloading files

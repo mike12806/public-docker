@@ -1,4 +1,6 @@
 name: docker-build-verification
+permissions:
+  contents: read
 
 on:
   pull_request:

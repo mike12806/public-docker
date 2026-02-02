@@ -75,6 +75,8 @@ jobs:
           push: false
           load: true
           tags: "test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Smoke test
         run: |

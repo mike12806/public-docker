@@ -82,6 +82,8 @@ jobs:
           file: "${{ matrix.dockerfile }}"
           push: true
           tags: "${{ steps.tags.outputs.tags }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Show Image Info
         run: |

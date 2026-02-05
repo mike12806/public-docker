@@ -12,19 +12,27 @@
     "github-actions"
   ],
   "argocd": {
-    "fileMatch": ["kubernetes/apps/.*\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/kubernetes/apps/.*\\.ya?ml$/"
+    ]
   },
   "kubernetes": {
-    "fileMatch": ["deployment\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/deployment\\.ya?ml$/"
+    ]
   },
   "docker-compose": {
-    "fileMatch": ["docker-compose\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/docker-compose\\.ya?ml$/"
+    ]
   },
   "github-actions": {
-    "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/^\\.github/workflows/[^/]+\\.ya?ml$/"
+    ]
   },
   "helm-values": {
-    "fileMatch": []
+    "managerFilePatterns": []
   },
   "automerge": true,
   "automergeStrategy": "squash",
@@ -57,7 +65,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [".*\\.ya?ml$"],
+      "managerFilePatterns": [
+        "/.*\\.ya?ml$/"
+      ],
       "matchStrings": [
         "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
       ],

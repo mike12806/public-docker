@@ -1,37 +1,19 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
   ],
-  "enabledManagers": [
-    "docker-compose",
-    "dockerfile",
-    "helm-values",
-    "kubernetes",
-    "argocd",
-    "github-actions"
-  ],
   "argocd": {
-    "managerFilePatterns": [
-      "/kubernetes/apps/.*\\.ya?ml$/"
-    ]
+    "fileMatch": ["kubernetes/apps/.*\\.ya?ml$"]
   },
   "kubernetes": {
-    "managerFilePatterns": [
-      "/deployment\\.ya?ml$/"
-    ]
+    "fileMatch": ["deployment\\.ya?ml$"]
   },
   "docker-compose": {
-    "managerFilePatterns": [
-      "/docker-compose\\.ya?ml$/"
-    ]
+    "fileMatch": ["docker-compose\\.ya?ml$"]
   },
   "github-actions": {
-    "managerFilePatterns": [
-      "/^\\.github/workflows/[^/]+\\.ya?ml$/"
-    ]
-  },
-  "helm-values": {
-    "managerFilePatterns": []
+    "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"]
   },
   "automerge": true,
   "automergeStrategy": "squash",
@@ -64,9 +46,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/.*\\.ya?ml$/"
-      ],
+      "fileMatch": [".*\\.ya?ml$"],
       "matchStrings": [
         "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
       ],

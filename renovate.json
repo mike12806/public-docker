@@ -10,6 +10,21 @@
     "argocd",
     "github-actions"
   ],
+  "argocd": {
+    "fileMatch": ["kubernetes/apps/.*\\.ya?ml$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["deployment\\.ya?ml$"]
+  },
+  "docker-compose": {
+    "fileMatch": ["docker-compose\\.ya?ml$"]
+  },
+  "github-actions": {
+    "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"]
+  },
+  "helm-values": {
+    "fileMatch": []
+  },
   "automerge": true,
   "automergeStrategy": "squash",
   "platformAutomerge": true,
@@ -38,34 +53,10 @@
       "automerge": true
     }
   ],
-  "argocd": {
-    "managerFilePatterns": [
-      "/kubernetes/apps/.*\\.ya?ml$/"
-    ]
-  },
-  "kubernetes": {
-    "managerFilePatterns": [
-      "/deployment.yaml/",
-      "/deployment.yml/"
-    ]
-  },
-  "docker-compose": {
-    "managerFilePatterns": [
-      "/docker-compose.yaml/",
-      "/docker-compose.yml/"
-    ]
-  },
-  "github-actions": {
-    "managerFilePatterns": [
-      "/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/"
-    ]
-  },
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/.*\\.ya?ml$/"
-      ],
+      "fileMatch": [".*\\.ya?ml$"],
       "matchStrings": [
         "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
       ],

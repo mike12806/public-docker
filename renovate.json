@@ -1,7 +1,14 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "enabledManagers": [
+    "docker-compose",
+    "dockerfile",
+    "helm-values",
+    "kubernetes",
+    "argocd",
+    "github-actions"
   ],
   "argocd": {
     "fileMatch": ["kubernetes/apps/.*\\.ya?ml$"]
@@ -14,6 +21,9 @@
   },
   "github-actions": {
     "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"]
+  },
+  "helm-values": {
+    "fileMatch": []
   },
   "automerge": true,
   "automergeStrategy": "squash",

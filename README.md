@@ -15,10 +15,10 @@ All images are published to `ghcr.io/mike12806/public-docker/[image-name]` and a
 
 A feature-rich self-hosted GitHub Actions runner image designed for Kubernetes environments. This image extends the official GitHub Actions runner with pre-installed tools and dependencies commonly needed in CI/CD workflows.
 
-**Base Image:** `ghcr.io/actions/actions-runner:2.329.0`
+**Base Image:** `ghcr.io/actions/actions-runner`
 
 **Included Tools:**
-- **CodeQL** (v2.23.3) - Pre-installed in toolcache layout for security scanning
+- **CodeQL** - Pre-installed in toolcache layout for security scanning
 - **AWS CLI v2** - For AWS resource management
 - **Docker Compose Plugin** - For multi-container applications
 - **Python 3** with pip, venv, and pipx
@@ -62,10 +62,10 @@ spec:
 
 A kubectl image with Redis tools for Kubernetes operations that require Redis interactions.
 
-**Base Image:** `docker.io/alpine/kubectl:1.34.2`
+**Base Image:** `docker.io/alpine/kubectl`
 
 **Included Tools:**
-- **kubectl** (v1.34.2) - Kubernetes command-line tool
+- **kubectl** - Kubernetes command-line tool
 - **redis-cli** - Redis command-line interface for Redis operations
 - **redis-server** - Redis server (available but not typically run in this image)
 - **curl** - HTTP client for API calls and downloads (included in base image)
@@ -92,6 +92,89 @@ spec:
 - CI/CD pipelines for Kubernetes deployments
 - Scripted Kubernetes operations requiring Redis client access
 - Database migration or initialization scripts that interact with both Kubernetes and Redis
+
+---
+
+### 🌐 Curl
+
+**Image:** `ghcr.io/mike12806/public-docker/curl`
+
+A lightweight Alpine-based image with curl, jq, and bash for making HTTP requests and processing JSON responses.
+
+**Base Image:** `docker.io/alpine`
+
+**Included Tools:**
+- **curl** - Command-line tool for transferring data with URLs
+- **jq** - Lightweight and flexible command-line JSON processor
+- **bash** - Bourne Again SHell for scripting
+
+**Usage Example:**
+```yaml
+# In a Kubernetes Job or CI/CD pipeline
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: api-check
+spec:
+  template:
+    spec:
+      containers:
+      - name: curl
+        image: ghcr.io/mike12806/public-docker/curl:latest
+        command: ["sh", "-c"]
+        args:
+          - |
+            curl -s https://api.example.com/data | jq '.results'
+      restartPolicy: Never
+```
+
+**Use Cases:**
+- API health checks and monitoring
+- JSON data processing in CI/CD pipelines
+- Lightweight HTTP client for scripts and automation
+- Quick data fetching and transformation tasks
+
+---
+
+### 🏠 Home Assistant
+
+**Image:** `ghcr.io/mike12806/public-docker/home-assistant`
+
+A custom Home Assistant image with an EDNS cookie fix for DNS resolution issues. This image patches the aiodns library to disable EDNS cookies by default, preventing timeouts with DNS servers (dnsmasq, pihole, unbound) that don't properly forward EDNS cookies.
+
+**Base Image:** `ghcr.io/home-assistant/home-assistant`
+
+**Key Features:**
+- Includes fix for DNS timeouts with forwarding resolvers that don't handle EDNS cookies properly
+- Patches aiodns to disable EDNS cookies by default
+- Based on upstream Home Assistant core with minimal modifications
+- Compatible with standard Home Assistant configuration and add-ons
+
+**Technical Details:**
+The image applies a runtime patch to `homeassistant/runner.py` that wraps the aiodns query method to set EDNS flags to 0 by default. This resolves issues introduced in c-ares 1.33.0+ where EDNS cookies are enabled by default and can cause timeouts with certain DNS server configurations.
+
+**Usage Example:**
+```yaml
+# In docker-compose.yml or Kubernetes
+version: '3'
+services:
+  homeassistant:
+    image: ghcr.io/mike12806/public-docker/home-assistant:latest
+    container_name: homeassistant
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+    volumes:
+      - ./config:/config
+    network_mode: host
+```
+
+**Use Cases:**
+- Running Home Assistant with DNS servers that don't properly handle EDNS cookies
+- Environments using dnsmasq, pihole, or unbound as DNS forwarders
+- Resolving DNS timeout issues in Home Assistant
+- Alternative to manual DNS configuration workarounds
 
 ---
 

@@ -31,7 +31,7 @@ image: ghcr.io/mike12806/public-docker/home-assistant:2026.2.1
 
 ## Build Arguments
 
-- `HA_VERSION`: Home Assistant version to base the image on (default: 2026.2.1)
+- `HA_VERSION`: Home Assistant version to base the image on (default: latest)
 
 ## License
 

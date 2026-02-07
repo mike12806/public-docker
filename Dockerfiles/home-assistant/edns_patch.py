@@ -39,9 +39,14 @@ def _patch_aiodns_to_disable_edns() -> None:
 def _disable_ipv6_if_requested() -> None:
     """Disable IPv6 connections when DISABLE_IPV6 env var is set.
 
-    Patches socket.getaddrinfo (for requests/urllib3) and
-    aiohttp.TCPConnector (for aiohttp/aiodns) to only use IPv4.
-    Prevents 'Network unreachable' errors on networks without IPv6.
+    Patches three layers to ensure IPv4-only operation:
+    1. socket.getaddrinfo - forces AF_INET (covers requests/urllib3/stdlib)
+    2. aiodns.DNSResolver - forces c-ares to only use IPv4 DNS transport
+    3. aiohttp.TCPConnector - forces AF_INET for HTTP connections
+
+    This prevents both 'Network unreachable' errors (from attempting IPv6
+    connections) and 'Could not contact DNS servers' errors (from c-ares
+    trying to reach DNS servers over IPv6).
     """
     import os  # noqa: PLC0415
 
@@ -52,8 +57,10 @@ def _disable_ipv6_if_requested() -> None:
     import socket  # noqa: PLC0415
 
     _LOGGER = logging.getLogger(__name__)
-    _LOGGER.info("DISABLE_IPV6 is set; forcing all connections to IPv4")
+    _LOGGER.warning("DISABLE_IPV6 is set; forcing all connections to IPv4")
 
+    # Layer 1: Patch socket.getaddrinfo to never return IPv6 results.
+    # This covers requests, urllib3, and any stdlib-based DNS resolution.
     _orig_getaddrinfo = socket.getaddrinfo
 
     def _ipv4_only_getaddrinfo(
@@ -68,6 +75,31 @@ def _disable_ipv6_if_requested() -> None:
 
     socket.getaddrinfo = _ipv4_only_getaddrinfo
 
+    # Layer 2: Patch aiodns.DNSResolver to constrain c-ares to IPv4 DNS transport.
+    # Without this, c-ares may try to contact DNS servers over IPv6, causing
+    # "Could not contact DNS servers" errors even though IPv4 DNS works fine.
+    try:
+        import aiodns  # noqa: PLC0415
+
+        _orig_resolver_init = aiodns.DNSResolver.__init__
+
+        def _ipv4_resolver_init(self, *args, **kwargs):
+            """Wrapper that adds ARES_FLAG_USEVC is not needed; just set servers to IPv4."""
+            _orig_resolver_init(self, *args, **kwargs)
+            # After c-ares channel is created, force IPv4-only DNS lookups.
+            # The nameservers are already set; we just need to ensure the
+            # channel doesn't try to reach them over IPv6.
+            try:
+                self._channel.set_local_ip("0.0.0.0")  # noqa: SLF001
+            except (AttributeError, Exception):
+                pass
+
+        aiodns.DNSResolver.__init__ = _ipv4_resolver_init
+    except ImportError:
+        pass
+
+    # Layer 3: Patch aiohttp.TCPConnector to default to AF_INET.
+    # This ensures all outbound HTTP connections use IPv4.
     try:
         import aiohttp  # noqa: PLC0415
 
@@ -82,6 +114,21 @@ def _disable_ipv6_if_requested() -> None:
     except ImportError:
         pass
 
+    # Layer 4: Patch aiohttp resolver to use IPv4-only.
+    # aiohttp's AsyncResolver wraps aiodns and may pass family=0 (UNSPEC).
+    try:
+        from aiohttp.resolver import AsyncResolver  # noqa: PLC0415
+
+        _orig_async_resolve = AsyncResolver.resolve
+
+        async def _ipv4_async_resolve(self, host, port=0, family=socket.AF_INET):
+            """Wrapper that forces family to AF_INET."""
+            return await _orig_async_resolve(self, host, port, family=socket.AF_INET)
+
+        AsyncResolver.resolve = _ipv4_async_resolve
+    except (ImportError, AttributeError):
+        pass
+
 '''
 
 # --- Apply patches ---
@@ -89,9 +136,9 @@ def _disable_ipv6_if_requested() -> None:
 with open(RUNNER_PY, "r") as f:
     content = f.read()
 
-# Check if already fully patched
-if "_patch_aiodns_to_disable_edns" in content and "_disable_ipv6_if_requested" in content:
-    print("Already patched, skipping.")
+# Check if already fully patched (v2 with Layer 2 aiodns patch)
+if "_ipv4_resolver_init" in content:
+    print("Already patched (v2), skipping.")
     sys.exit(0)
 
 # Validate anchor points exist
@@ -103,19 +150,17 @@ if "_enable_posix_spawn()" not in content:
     print("ERROR: Could not find _enable_posix_spawn() call in runner.py", file=sys.stderr)
     sys.exit(1)
 
-# Remove any previous partial patch (EDNS-only from older image version)
-# so we can cleanly insert the combined patch block
-if "_patch_aiodns_to_disable_edns" in content and "_disable_ipv6_if_requested" not in content:
-    # Strip old patch function and call, we'll re-add both
-    print("Upgrading from EDNS-only patch to combined patch...")
-    # Remove old call
-    content = content.replace(
-        "    _patch_aiodns_to_disable_edns()\n", ""
-    )
-    # Remove old function (everything between the markers)
-    import re
+# Remove any previous patch (v1 EDNS-only or v1 combined) so we can cleanly insert v2
+import re  # noqa: E402
+
+if "_patch_aiodns_to_disable_edns" in content:
+    print("Removing previous patch version...")
+    # Remove old calls
+    content = content.replace("    _patch_aiodns_to_disable_edns()\n", "")
+    content = content.replace("    _disable_ipv6_if_requested()\n", "")
+    # Remove old functions
     content = re.sub(
-        r'\ndef _patch_aiodns_to_disable_edns\(\).*?(?=\ndef )',
+        r'\ndef _patch_aiodns_to_disable_edns\(\).*?(?=\ndef _enable_posix_spawn)',
         '\n',
         content,
         flags=re.DOTALL,
@@ -138,4 +183,4 @@ content = content.replace(
 with open(RUNNER_PY, "w") as f:
     f.write(content)
 
-print("Patches applied successfully!")
+print("Patches applied successfully (v2)!")

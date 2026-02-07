@@ -32,9 +32,8 @@ def _patch_aiodns_to_disable_edns() -> None:\
 \
 ' /usr/src/homeassistant/homeassistant/runner.py && \
     sed -i 's/def setup(/def setup(/' /usr/src/homeassistant/homeassistant/runner.py && \
-    sed -i '/def setup(/a \    _patch_aiodns_to_disable_edns()' /usr/src/homeassistant/homeassistant/runner.py
+    sed -i '/def setup(/a \    _patch_aiodns_to_disable_edns()' /usr/src/homeassistant/homeassistant/runner.py && \
+    grep -A 5 "_patch_aiodns_to_disable_edns" /usr/src/homeassistant/homeassistant/runner.py
 
-USER 0
-
-# Verify the patch was applied (optional, for debugging)
-RUN grep -A 20 "_patch_aiodns_to_disable_edns" /usr/src/homeassistant/homeassistant/runner.py || echo "Patch verification check"
+# Switch back to default user from base image (inherits from upstream)
+USER root

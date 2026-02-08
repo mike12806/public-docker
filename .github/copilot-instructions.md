@@ -266,7 +266,7 @@ spec:
 ### Build Failures
 1. Check GitHub Actions logs for specific errors
 2. Test locally with same base image versions
-3. Verify syntax with `docker build --dry-run`
+3. Verify syntax by running the actual build locally
 
 ### Image Pull Errors
 1. Verify image exists in GHCR

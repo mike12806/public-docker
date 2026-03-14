@@ -76,7 +76,7 @@ jobs:
           echo "tags=${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:latest,${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ needs.build-and-push.outputs.version }},${{ env.REGISTRY }}/${{ github.repository_owner }}/public-docker/${{ steps.meta.outputs.image_name }}:${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: "${{ steps.meta.outputs.context_path }}"
           file: "${{ matrix.dockerfile }}"

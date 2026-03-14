@@ -68,7 +68,7 @@ jobs:
           context=$(dirname "${{ matrix.dockerfile }}")
           echo "context=$context" >> $GITHUB_OUTPUT
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
           file: "${{ github.workspace }}/${{ matrix.dockerfile }}"

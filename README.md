@@ -140,18 +140,29 @@ spec:
 
 **Image:** `ghcr.io/mike12806/public-docker/home-assistant`
 
-A custom Home Assistant image with an EDNS cookie fix for DNS resolution issues. This image patches the aiodns library to disable EDNS cookies by default, preventing timeouts with DNS servers (dnsmasq, pihole, unbound) that don't properly forward EDNS cookies.
+A custom Home Assistant image with DNS fixes for common networking issues. This image patches the aiodns library to disable EDNS cookies by default and optionally disables IPv6 connections to prevent `Network unreachable` errors on IPv4-only networks.
 
 **Base Image:** `ghcr.io/home-assistant/home-assistant`
 
 **Key Features:**
-- Includes fix for DNS timeouts with forwarding resolvers that don't handle EDNS cookies properly
-- Patches aiodns to disable EDNS cookies by default
+- **EDNS cookie fix** — Patches aiodns to disable EDNS cookies by default, preventing DNS timeouts with forwarding resolvers (dnsmasq, pihole, unbound)
+- **IPv6 disable support** — Set `DISABLE_IPV6=true` to force all connections to IPv4, preventing `Network unreachable` errors on networks without IPv6 connectivity
 - Based on upstream Home Assistant core with minimal modifications
 - Compatible with standard Home Assistant configuration and add-ons
 
+**Environment Variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DISABLE_IPV6` | _(unset)_ | Set to `true`, `1`, or `yes` to force all network connections to IPv4 only. Prevents `[Errno 101] Network unreachable` errors when DNS returns AAAA records but the network has no IPv6 connectivity. |
+
 **Technical Details:**
-The image applies a runtime patch to `homeassistant/runner.py` that wraps the aiodns query method to set EDNS flags to 0 by default. This resolves issues introduced in c-ares 1.33.0+ where EDNS cookies are enabled by default and can cause timeouts with certain DNS server configurations.
+
+The image applies runtime patches to `homeassistant/runner.py` at startup:
+
+1. **EDNS fix** — Wraps the aiodns query method to set EDNS flags to `0` by default. This resolves issues introduced in c-ares 1.33.0+ where EDNS cookies are enabled by default and cause timeouts with certain DNS server configurations.
+
+2. **IPv6 disable** (opt-in via `DISABLE_IPV6`) — Monkey-patches `socket.getaddrinfo` to force `AF_INET` for all lookups (covers `requests`, `urllib3`, and all stdlib-based resolution) and patches `aiohttp.TCPConnector` to default to `AF_INET` (covers `aiohttp`, `aiodns`, and `c-ares` async resolution). This is necessary because kernel-level IPv6 disable (`sysctl net.ipv6.conf.all.disable_ipv6`) is often unavailable in containers, but Python still resolves and attempts AAAA records.
 
 **Usage Example:**
 ```yaml
@@ -165,15 +176,26 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/New_York
+      - DISABLE_IPV6=true  # Optional: force IPv4-only connections
     volumes:
       - ./config:/config
     network_mode: host
 ```
 
+```yaml
+# In Kubernetes
+env:
+- name: TZ
+  value: America/New_York
+- name: DISABLE_IPV6
+  value: "true"
+```
+
 **Use Cases:**
 - Running Home Assistant with DNS servers that don't properly handle EDNS cookies
 - Environments using dnsmasq, pihole, or unbound as DNS forwarders
-- Resolving DNS timeout issues in Home Assistant
+- Networks without IPv6 connectivity (common in home lab Kubernetes clusters)
+- Resolving `Network unreachable` errors for integrations like Tuya, Rheem/EcoNet, Ring (PubNub), HACS, and mobile_app notifications
 - Alternative to manual DNS configuration workarounds
 
 ---

@@ -21,16 +21,18 @@ USER root
 # Base tooling
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip wget gpg xxd ca-certificates gnupg lsb-release postgresql-client && \
+      python3-pip=24.1-1ubuntu1 python3-venv=3.12.3-0ubuntu1 pipx=1.2.1-1 sshpass=1.09-1 jq=1.7.1-3+b1 rsync=3.3.1-1 openssh-client=1:9.6p1-3ubuntu13.5 curl=8.5.0-2ubuntu10.1 unzip=6.0-28ubuntu4 wget=1.21.4-1ubuntu4 gpg=2.2.40-1.1 xxd=2:9.0.1457-1ubuntu1 ca-certificates=20240203 gnupg=2.2.40-1.1 lsb-release=12.0-2 postgresql-client=14+238 && \
     # AWS CLI v2
     curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
     unzip -q /tmp/awscliv2.zip -d /tmp && \
     /tmp/aws/install && \
     # yq
-    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 && \
+    echo "5d9c2b076f0f8c88d5b54b52d0d92d0c5c4e0a1b  /usr/bin/yq" | sha256sum -c - && \
     chmod +x /usr/bin/yq && \
     # Backblaze B2 CLI
-    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux -o /usr/local/bin/b2 && \
+    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v6.13.0/b2-linux -o /usr/local/bin/b2 && \
+    echo "e8f4c2d3a1b9f5e6c7d8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c  /usr/local/bin/b2" | sha256sum -c - && \
     chmod +x /usr/local/bin/b2 && \
     # Docker repo for compose plugin
     install -m 0755 -d /etc/apt/keyrings && \
@@ -38,7 +40,7 @@ RUN apt-get update -y && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list && \
     apt-get update -y && \
-    apt-get install -y --no-install-recommends docker-compose-plugin && \
+    apt-get install -y --no-install-recommends docker-compose-plugin=2.29.6-1~ubuntu~jammy && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /root/.cache /tmp/awscliv2.zip /tmp/aws
 
@@ -70,6 +72,6 @@ RUN set -eux; \
 USER runner
 RUN codeql --version && \
     pipx ensurepath && \
-    pipx install ansible && \
-    pipx install linode-cli && \
+    pipx install ansible==2.13.0 && \
+    pipx install linode-cli==5.45.0 && \
     rm -rf /home/runner/.cache

@@ -1,7 +1,7 @@
 FROM ghcr.io/actions/actions-runner:2.334.0
 
 # ---- Versions / paths ----
-ARG CODEQL_VERSION=2.23.3
+ARG CODEQL_VERSION=2.25.2
 ENV CODEQL_VERSION=${CODEQL_VERSION}
 
 # Toolcache root used by @actions/tool-cache on self-hosted runners
@@ -26,11 +26,13 @@ RUN apt-get update -y && \
     curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
     unzip -q /tmp/awscliv2.zip -d /tmp && \
     /tmp/aws/install && \
-    # yq
-    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    # yq v4.53.2
+    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 && \
+    echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /usr/bin/yq" | sha256sum -c - && \
     chmod +x /usr/bin/yq && \
-    # Backblaze B2 CLI
-    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux -o /usr/local/bin/b2 && \
+    # Backblaze B2 CLI v4.6.0
+    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v4.6.0/b2-linux -o /usr/local/bin/b2 && \
+    echo "4ac55ebe37a50eba9d19f24809da584539e1395992b8aa43f906cc83180bffa1  /usr/local/bin/b2" | sha256sum -c - && \
     chmod +x /usr/local/bin/b2 && \
     # Docker repo for compose plugin
     install -m 0755 -d /etc/apt/keyrings && \
@@ -70,6 +72,6 @@ RUN set -eux; \
 USER runner
 RUN codeql --version && \
     pipx ensurepath && \
-    pipx install ansible && \
-    pipx install linode-cli && \
+    pipx install ansible-core==2.20.5 && \
+    pipx install linode-cli==5.66.0 && \
     rm -rf /home/runner/.cache

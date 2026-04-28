@@ -28,7 +28,6 @@
   "automerge": true,
   "automergeStrategy": "squash",
   "platformAutomerge": true,
-  "respectLatest": true,
   "ignoreTests": true,
   "minimumReleaseAge": "3 days",
   "rebaseWhen": "auto",

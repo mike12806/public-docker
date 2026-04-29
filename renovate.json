@@ -2,6 +2,7 @@
   "extends": [
     "config:recommended"
   ],
+  "internalChecksFilter": "strict",
   "enabledManagers": [
     "docker-compose",
     "dockerfile",

@@ -1,4 +1,4 @@
-FROM ghcr.io/actions/actions-runner:2.334.0
+FROM ghcr.io/actions/actions-runner:2.336.0
 
 # ---- Versions / paths ----
 ARG CODEQL_VERSION=2.25.2

@@ -3,7 +3,7 @@
 # Fixes DNS timeouts with forwarding resolvers that don't handle EDNS cookies properly
 # Related issue: https://github.com/home-assistant/core/issues/145708
 
-ARG HA_VERSION=2026.7.4
+ARG HA_VERSION=2026.8.1
 FROM ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 
 # Apply the EDNS cookie patch to homeassistant/runner.py

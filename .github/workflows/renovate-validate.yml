@@ -17,6 +17,11 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Validate Renovate config
+        env:
+          # Pinned: renovate@44.131.1+ crashes npm during install (silent exit 1),
+          # so tracking @latest broke validation on every PR.
+          # renovate: datasource=npm depName=renovate
+          RENOVATE_VERSION: 44.131.0
         run: |
           # Find all potential Renovate config files
           config_files=$(find . -type f \( \
@@ -29,7 +34,7 @@ jobs:
           # Validate each config file
           for config in $config_files; do
             echo "Validating $config..."
-            npx --yes -p renovate@latest renovate-config-validator "$config"
+            npx --yes -p "renovate@${RENOVATE_VERSION}" renovate-config-validator "$config"
             if [ $? -ne 0 ]; then
               echo "Error: Invalid Renovate configuration in $config"
               exit 1

@@ -1,69 +1,8 @@
 {
-  "extends": [
-    "config:recommended"
-  ],
-  "internalChecksFilter": "strict",
-  "enabledManagers": [
-    "docker-compose",
-    "dockerfile",
-    "helm-values",
-    "kubernetes",
-    "argocd",
-    "github-actions"
-  ],
-  "argocd": {
-    "managerFilePatterns": ["/kubernetes/apps/.*\\.ya?ml$/"]
-  },
-  "kubernetes": {
-    "managerFilePatterns": ["/deployment\\.ya?ml$/"]
-  },
-  "docker-compose": {
-    "managerFilePatterns": ["/docker-compose\\.ya?ml$/"]
-  },
-  "github-actions": {
-    "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"]
-  },
-  "helm-values": {
-    "managerFilePatterns": []
-  },
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>mike12806/renovate-config"],
   "automerge": true,
-  "automergeStrategy": "squash",
-  "platformAutomerge": true,
   "ignoreTests": true,
-  "minimumReleaseAge": "3 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
-  "rebaseWhen": "auto",
-  "packageRules": [
-    {
-      "matchDepNames": [
-        "immich"
-      ],
-      "automerge": true
-    },
-    {
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "automerge": false
-    },
-    {
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/.*\\.ya?ml$/"],
-      "matchStrings": [
-        "image:\\s*tag:\\s*(?<currentValue>.*?)\\n"
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "immich",
-      "versioningTemplate": "semver"
-    }
-  ]
+  "enabledManagers": ["dockerfile", "github-actions"]
 }

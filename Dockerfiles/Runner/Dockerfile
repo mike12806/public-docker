@@ -94,6 +94,8 @@ ARG TERRAFORM_VERSION=1.17.0
 ARG VAULT_VERSION=2.1.0
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.+)$
 ARG KUBECTL_VERSION=1.37.1
+# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.+)$
+ARG HELM_VERSION=4.3.1
 
 # Node in the toolcache layout, so actions/setup-node finds it without
 # downloading (node-version: 24), and on PATH for jobs that skip setup-node.
@@ -110,7 +112,7 @@ RUN set -eux; \
     rm -f /tmp/node-v*.tar.gz; \
     node --version
 
-# Terraform, Vault (zips checked against HashiCorp's SHA256SUMS) and kubectl.
+# Terraform, Vault (zips checked against HashiCorp's SHA256SUMS), kubectl and Helm.
 RUN set -eux; \
     cd /tmp; \
     for tool in "terraform:${TERRAFORM_VERSION}" "vault:${VAULT_VERSION}"; do \
@@ -123,7 +125,12 @@ RUN set -eux; \
     curl -fsSLo /usr/local/bin/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
     echo "$(curl -fsSL "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256")  /usr/local/bin/kubectl" | sha256sum -c -; \
     chmod +x /usr/local/bin/kubectl; \
-    terraform version; vault version; kubectl version --client
+    curl -fsSLO "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz"; \
+    echo "$(curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz.sha256sum" | cut -d' ' -f1)  helm-v${HELM_VERSION}-linux-amd64.tar.gz" | sha256sum -c -; \
+    tar -xzf "helm-v${HELM_VERSION}-linux-amd64.tar.gz" linux-amd64/helm; \
+    install -m 755 linux-amd64/helm /usr/local/bin/helm; \
+    rm -rf linux-amd64 "helm-v${HELM_VERSION}-linux-amd64.tar.gz"; \
+    terraform version; vault version; kubectl version --client; helm version
 
 # ---------- Preinstall CodeQL (toolcache layout) ----------
 # This matches the layout used on GitHub-hosted runners:

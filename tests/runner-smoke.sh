@@ -35,7 +35,7 @@ echo "::group::Tools on PATH"
 docker run --rm "$image" bash -euc '
   python3 --version; codeql --version; psql --version
   node --version; npm --version
-  terraform version; vault version; kubectl version --client
+  terraform version; vault version; kubectl version --client; helm version
   ansible-playbook --version; command -v linode-cli
   restic version; dig -v; ping -V; yq --version; jq --version; b2 version
   docker --version; docker compose version; docker buildx version

@@ -93,7 +93,7 @@ ARG NODE_VERSION=24.22.1
 # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
 ARG TERRAFORM_VERSION=1.17.0
 # renovate: datasource=github-releases depName=hashicorp/vault extractVersion=^v(?<version>.+)$
-ARG VAULT_VERSION=2.1.0
+ARG VAULT_VERSION=2.2.1
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.+)$
 ARG KUBECTL_VERSION=1.37.1
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.+)$

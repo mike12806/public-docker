@@ -7,7 +7,7 @@
 # its files under /out, laid out as they go in the image (parent directories
 # included, with their owners and modes), and the final stage stacks them on
 # the base with COPY --link, which doesn't depend on the layers beneath it.
-FROM ghcr.io/actions/actions-runner:2.338.1 AS runner
+FROM ghcr.io/actions/actions-runner:2.338.2 AS runner
 
 # ---------- Base: OS packages and the runner user ----------
 FROM ubuntu:26.04 AS base

@@ -66,9 +66,11 @@ docker run --rm -e NODE_VERSION="$node_version" "$image" bash -euc '
 '
 echo "::endgroup::"
 
-# No network: these pass only if npx finds them in its cache.
+# No network: these pass only if npx finds them in its cache. Offline mode
+# makes npm go straight to the cache instead of retrying the registry first
+# (~70s of backoff per npx call).
 echo "::group::npx cache (no network)"
-docker run --rm --network none \
+docker run --rm --network none -e npm_config_offline=true \
   -e RENOVATE_VERSION="$renovate_version" -e WRANGLER_VERSION="$wrangler_version" \
   "$image" bash -euc '
   cd "$(mktemp -d)"

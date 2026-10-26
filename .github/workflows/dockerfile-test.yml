@@ -92,10 +92,12 @@ jobs:
           push: false
           load: true
           tags: "test-${{ matrix.image }}:${{ github.sha }}"
-          # One scope per image: images sharing a scope overwrite each other's
-          # cache, so only the last one to finish would hit it next time.
+          # Reads the cache main's publish builds write (one scope per image:
+          # images sharing a scope overwrite each other's cache). PR builds
+          # don't write it: exporting means compressing and uploading every
+          # stage's layers one at a time, which took 17 min on a cold Runner
+          # build, and only a second push to the same PR would reuse it.
           cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
       - name: Smoke test
         if: matrix.build

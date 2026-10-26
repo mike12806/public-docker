@@ -46,7 +46,7 @@ RUN set -eux; \
     unzip -q /tmp/awscliv2.zip -d /tmp; \
     /tmp/aws/install; \
     # yq v4.53.2
-    wget -q --tries=5 --waitretry=3 --retry-connrefused -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
+    curl -fsSLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
     echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /usr/bin/yq" | sha256sum -c -; \
     chmod +x /usr/bin/yq; \
     # Backblaze B2 CLI v4.6.0

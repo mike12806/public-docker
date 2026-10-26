@@ -20,6 +20,17 @@ done
 
 docker image inspect -f 'Image size: {{.Size}} bytes' "$image"
 
+echo "::group::OS, runner and sudo"
+docker run --rm "$image" bash -euc '
+  . /etc/os-release; echo "$PRETTY_NAME"
+  [ "$VERSION_ID" = "26.04" ] || { echo "want Ubuntu 26.04, got $VERSION_ID"; exit 1; }
+  [ "$(id -un)" = runner ] && [ "$(id -u)" = 1001 ]
+  ~/bin/Runner.Listener --version
+  test -x ~/run.sh
+  sudo -n true && echo "runner has passwordless sudo"
+'
+echo "::endgroup::"
+
 echo "::group::Tools on PATH"
 docker run --rm "$image" bash -euc '
   python3 --version; codeql --version; psql --version
@@ -27,6 +38,9 @@ docker run --rm "$image" bash -euc '
   terraform version; vault version; kubectl version --client
   ansible-playbook --version; command -v linode-cli
   restic version; dig -v; ping -V; yq --version; jq --version; b2 version
+  docker --version; docker compose version; docker buildx version
+  gh --version; git --version; make --version | head -1; file --version | head -1; aws --version
+  python3 -c "import truenas_api_client, websocket; print(\"truenas_api_client + websocket-client\", websocket.__version__)"
 '
 echo "::endgroup::"
 

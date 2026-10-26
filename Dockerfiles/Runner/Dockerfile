@@ -1,8 +1,19 @@
-FROM ghcr.io/actions/actions-runner:2.338.1
+# The runner and Docker client come from the official image; everything else
+# sits on Ubuntu 26.04, so jobs that asked GitHub for ubuntu-26.04 get the same
+# OS here. Renovate bumps both FROM lines.
+FROM ghcr.io/actions/actions-runner:2.338.1 AS runner
+
+FROM ubuntu:26.04
 
 # ---- Versions / paths ----
 ARG CODEQL_VERSION=2.25.2
 ENV CODEQL_VERSION=${CODEQL_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+# Same runner settings as the official image (ARC relies on them).
+ENV RUNNER_MANUALLY_TRAP_SIG=1
+ENV ACTIONS_RUNNER_PRINT_LOG_TO_STDOUT=1
+ENV ImageOS=ubuntu26
 
 # Toolcache root used by @actions/tool-cache on self-hosted runners
 ENV RUNNER_TOOL_CACHE=/opt/hostedtoolcache
@@ -16,34 +27,60 @@ ENV PATH=${CODEQL_DIST}:${PATH}
 # to $GITHUB_ENV, but this ENV helps in most paths.
 ENV GITHUB_HOST=github.com
 
-USER root
+# renovate: datasource=github-releases depName=docker/compose extractVersion=^v(?<version>.+)$
+ARG COMPOSE_VERSION=5.6.1
+# renovate: datasource=github-releases depName=cli/cli extractVersion=^v(?<version>.+)$
+ARG GH_VERSION=2.103.2
 
-# Base tooling
-RUN apt-get update -y && \
+# Base tooling, plus the libraries the runner's bundled .NET needs (the
+# official image gets those from dotnet/runtime-deps).
+RUN set -eux; \
+    apt-get update -y; \
     apt-get install -y --no-install-recommends \
-      python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip wget gpg xxd ca-certificates gnupg lsb-release postgresql-client \
-      restic dnsutils iputils-ping && \
+      sudo lsb-release gpg-agent software-properties-common git \
+      ca-certificates libc6 libgcc-s1 libstdc++6 libssl3t64 libkrb5-3 zlib1g tzdata \
+      "$(apt-cache search --names-only '^libicu[0-9]+$' | sort -V | tail -1 | cut -d' ' -f1)" \
+      python3 python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip zip wget gpg xxd gnupg \
+      postgresql-client restic dnsutils iputils-ping file make; \
     # AWS CLI v2
-    curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
-    unzip -q /tmp/awscliv2.zip -d /tmp && \
-    /tmp/aws/install && \
+    curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip; \
+    unzip -q /tmp/awscliv2.zip -d /tmp; \
+    /tmp/aws/install; \
     # yq v4.53.2
-    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 && \
-    echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /usr/bin/yq" | sha256sum -c - && \
-    chmod +x /usr/bin/yq && \
+    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
+    echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /usr/bin/yq" | sha256sum -c -; \
+    chmod +x /usr/bin/yq; \
     # Backblaze B2 CLI v4.6.0
-    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v4.6.0/b2-linux -o /usr/local/bin/b2 && \
-    echo "4ac55ebe37a50eba9d19f24809da584539e1395992b8aa43f906cc83180bffa1  /usr/local/bin/b2" | sha256sum -c - && \
-    chmod +x /usr/local/bin/b2 && \
-    # Docker repo for compose plugin
-    install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
-      > /etc/apt/sources.list.d/docker.list && \
-    apt-get update -y && \
-    apt-get install -y --no-install-recommends docker-compose-plugin && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /root/.cache /tmp/awscliv2.zip /tmp/aws
+    curl -fsSL -L https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v4.6.0/b2-linux -o /usr/local/bin/b2; \
+    echo "4ac55ebe37a50eba9d19f24809da584539e1395992b8aa43f906cc83180bffa1  /usr/local/bin/b2" | sha256sum -c -; \
+    chmod +x /usr/local/bin/b2; \
+    # Docker Compose plugin (Docker's apt repo has no 26.04 suite yet)
+    mkdir -p /usr/local/lib/docker/cli-plugins; \
+    curl -fsSLo /usr/local/lib/docker/cli-plugins/docker-compose "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64"; \
+    echo "$(curl -fsSL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64.sha256" | cut -d' ' -f1)  /usr/local/lib/docker/cli-plugins/docker-compose" | sha256sum -c -; \
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose; \
+    # GitHub CLI
+    curl -fsSLo /tmp/gh.tgz "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"; \
+    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" | grep " gh_${GH_VERSION}_linux_amd64.tar.gz\$" | sed "s#gh_${GH_VERSION}_linux_amd64.tar.gz#/tmp/gh.tgz#" | sha256sum -c -; \
+    tar -xzf /tmp/gh.tgz -C /tmp; \
+    install -m 755 "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /root/.cache /tmp/awscliv2.zip /tmp/aws /tmp/gh.tgz /tmp/gh_*
+
+# The runner user, sudo and docker group exactly as in the official image.
+RUN adduser --disabled-password --gecos "" --uid 1001 runner \
+    && groupadd docker --gid 123 \
+    && usermod -aG sudo runner \
+    && usermod -aG docker runner \
+    && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
+    && echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers \
+    && chmod 777 /home/runner
+
+WORKDIR /home/runner
+COPY --chown=runner:docker --from=runner /home/runner /home/runner
+COPY --from=runner /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx
+COPY --from=runner /usr/bin/docker /usr/bin/docker
+RUN ./bin/Runner.Listener --version && docker --version && docker compose version && docker buildx version
 
 # ---------- Pinned tools jobs would otherwise download every run ----------
 # Renovate bumps these through the `# renovate:` comments (custom regex manager
@@ -111,6 +148,18 @@ RUN set -eux; \
     rm -f "${tmp_tgz}"; \
     # Quick sanity check (as root)
     codeql --version
+
+# TrueNAS api_client (not on PyPI; pinned to a commit on main) and the
+# websocket-client it needs, for public-jobs' NFS updater. websocket-client
+# 1.9.1 raced on close; see that workflow's history before moving the pin.
+# renovate: datasource=git-refs depName=https://github.com/truenas/api_client currentValue=main
+ARG TRUENAS_API_CLIENT_REF=8d7e37383717aea15ce46167cfcd92325acbcd8a
+# renovate: datasource=pypi depName=websocket-client
+ARG WEBSOCKET_CLIENT_VERSION=1.9.2
+RUN pip3 install --no-cache-dir --break-system-packages \
+      "git+https://github.com/truenas/api_client.git@${TRUENAS_API_CLIENT_REF}" \
+      "websocket-client==${WEBSOCKET_CLIENT_VERSION}" \
+    && python3 -c "import truenas_api_client, websocket"
 
 # Switch to runner and validate again to ensure PATH/permissions are good for non-root
 USER runner

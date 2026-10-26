@@ -54,7 +54,7 @@ class RenovateDockerfileVersions(unittest.TestCase):
                 for m in pattern.finditer(text):
                     arg = re.search(r"ARG ([A-Z0-9_]+)=", m.group(0)).group(1)
                     tracked[arg] = m.groupdict()
-            version_args = set(re.findall(r"^ARG ([A-Z0-9_]+_VERSION)=", text, re.M))
+            version_args = set(re.findall(r"^ARG ([A-Z0-9_]+_(?:VERSION|REF))=", text, re.M))
             # The built-in dockerfile manager updates ARGs a FROM line uses.
             from_args = set(re.findall(r"^FROM \S*\$\{?([A-Z0-9_]+)\}?", text, re.M))
             version_args -= from_args
@@ -63,6 +63,8 @@ class RenovateDockerfileVersions(unittest.TestCase):
                     self.assertIn(arg, tracked, f"{arg} has no `# renovate:` comment Renovate can read")
                     dep = tracked[arg]
                     self.assertTrue(dep["datasource"] and dep["depName"] and dep["currentValue"])
+                    if dep.get("currentDigest") is not None:
+                        self.assertRegex(dep["currentDigest"], r"^[0-9a-f]{40}$")
 
     def test_extract_version_patterns_compile(self):
         for files, patterns in manager_regexes():

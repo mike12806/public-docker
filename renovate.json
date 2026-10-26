@@ -14,12 +14,13 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Pinned tool versions in Dockerfiles: a `# renovate:` comment directly above an ARG",
+      "description": "Pinned tool versions in Dockerfiles: a `# renovate:` comment directly above an ARG (a git-refs comment names the branch; the ARG holds the commit)",
       "managerFilePatterns": [
         "/(^|/)Dockerfile$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+ARG [A-Z0-9_]+=(?<currentValue>\\S+)"
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+ARG [A-Z0-9_]+=(?<currentValue>\\S+)",
+        "# renovate: datasource=(?<datasource>git-refs) depName=(?<depName>\\S+) currentValue=(?<currentValue>\\S+)\\s+ARG [A-Z0-9_]+=(?<currentDigest>[0-9a-f]{40})"
       ]
     }
   ]

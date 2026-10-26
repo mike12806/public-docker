@@ -21,80 +21,86 @@ jobs:
       - uses: actions/checkout@v7
       - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
+  # One matrix entry per Dockerfile, so every image keeps its check, but only
+  # the images this PR changes (their directory, or the Runner smoke test) get
+  # built. A change to this workflow builds them all.
   discover-dockerfiles:
     runs-on: self-hosted
     outputs:
-      dockerfiles: ${{ steps.find.outputs.dockerfiles }}
-      found: ${{ steps.found.outputs.found }}
+      matrix: ${{ steps.find.outputs.matrix }}
+      found: ${{ steps.find.outputs.found }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The PR's merge commit and its parents: the first is the base branch.
+          fetch-depth: 2
 
       - id: find
         run: |
-          files=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile)
-          echo "Raw files found by find:"
-          find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile
-          if [ -z "$files" ]; then
-            echo "dockerfiles=[]" >> $GITHUB_OUTPUT
-          else
-            jq -n --arg files "$files" '$files | split("\n")' > dockerfiles.json
-            echo "dockerfiles=$(jq -c . dockerfiles.json)" >> $GITHUB_OUTPUT
-            echo "Output as JSON:"
-            cat dockerfiles.json
-          fi
+          # Without a merge commit to diff against, build everything.
+          changed() { ! git rev-parse -q --verify HEAD^2 >/dev/null || ! git diff --quiet HEAD^1 HEAD -- "$@"; }
+          build_all=false
+          if changed .github/workflows/dockerfile-test.yml; then build_all=true; fi
 
-      - id: found
-        run: |
-          if [ -f dockerfiles.json ]; then
-            found=$(jq length dockerfiles.json)
-          else
-            found=0
-          fi
-          if [ "$found" -gt 0 ]; then
-            echo "found=true" >> $GITHUB_OUTPUT
-          else
-            echo "found=false" >> $GITHUB_OUTPUT
-          fi
-          echo "found output: $found"
+          matrix=$(find Dockerfiles -mindepth 2 -maxdepth 2 -name Dockerfile | sort | while read -r dockerfile; do
+            context=$(dirname "$dockerfile")
+            # Same name as the published image (publish-runner-image.yml), so
+            # PR builds read the cache that main's builds write.
+            image=$(echo "$context" | sed 's|^Dockerfiles/||' | tr '/.' '-' | tr '[:upper:]' '[:lower:]')
+            inputs=("$context")
+            if [ "$context" = Dockerfiles/Runner ]; then inputs+=(tests/runner-smoke.sh); fi
+            build=$build_all
+            if changed "${inputs[@]}"; then build=true; fi
+            jq -nc --arg dockerfile "$dockerfile" --arg context "$context" --arg image "$image" --argjson build "$build" \
+              '{dockerfile: $dockerfile, context: $context, image: $image, build: $build}'
+          done | jq -sc .)
 
+          echo "$matrix" | jq .
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "found=$(echo "$matrix" | jq 'length > 0')" >> "$GITHUB_OUTPUT"
 
   build-and-test:
+    name: build-and-test (${{ matrix.dockerfile }})
     needs: discover-dockerfiles
     if: needs.discover-dockerfiles.outputs.found == 'true'
-    runs-on: self-hosted-dind
+    # An image this PR doesn't change only reports its check, so it doesn't
+    # need (or hold) a Docker-in-Docker runner.
+    runs-on: ${{ matrix.build && 'self-hosted-dind' || 'self-hosted' }}
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: ${{ fromJson(needs.discover-dockerfiles.outputs.dockerfiles) }}
+        include: ${{ fromJson(needs.discover-dockerfiles.outputs.matrix) }}
 
     steps:
+      - name: Unchanged in this PR
+        if: ${{ !matrix.build }}
+        run: echo "This PR doesn't change ${{ matrix.context }} or its tests, so it isn't rebuilt."
+
       - uses: actions/checkout@v7
+        if: matrix.build
 
-      - uses: docker/setup-buildx-action@v4
-
-      - id: imgname
-        run: |
-          name=$(dirname "${{ matrix.dockerfile }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
-          echo "name=$name" >> $GITHUB_OUTPUT
-
-      - id: context
-        run: |
-          context=$(dirname "${{ matrix.dockerfile }}")
-          echo "context=$context" >> $GITHUB_OUTPUT
-
+      # No setup-buildx-action: the default builder's docker driver builds
+      # straight into the engine's (containerd) image store, which can still
+      # export to the GHA cache. A docker-container builder takes ~25s to start
+      # and then has to load the image into the engine for the smoke test
+      # (4 min for the Runner image).
       - uses: docker/build-push-action@v7
+        if: matrix.build
         with:
-          context: "${{ github.workspace }}/${{ steps.context.outputs.context }}"
-          file: "${{ github.workspace }}/${{ matrix.dockerfile }}"
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: false
           load: true
-          tags: "test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: "test-${{ matrix.image }}:${{ github.sha }}"
+          # One scope per image: images sharing a scope overwrite each other's
+          # cache, so only the last one to finish would hit it next time.
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
       - name: Smoke test
+        if: matrix.build
         run: |
-          image_tag="test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
+          image_tag="test-${{ matrix.image }}:${{ github.sha }}"
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
             tests/runner-smoke.sh "$image_tag" "${{ matrix.dockerfile }}"
             exit $?

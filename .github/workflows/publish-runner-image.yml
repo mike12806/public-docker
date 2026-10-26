@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
     outputs:
@@ -42,7 +42,7 @@ jobs:
 
   build-matrix:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-dind
     permissions:
       contents: write
       packages: write
@@ -93,7 +93,7 @@ jobs:
 
   release:
     needs: [build-matrix, build-and-push]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
     steps:

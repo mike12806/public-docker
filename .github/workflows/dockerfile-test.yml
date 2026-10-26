@@ -1,4 +1,5 @@
 name: docker-build-verification
+# Builds run on the self-hosted Docker-in-Docker runner (self-hosted-dind); the rest on self-hosted.
 permissions:
   contents: read
 
@@ -6,16 +7,22 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+# A new push to the PR cancels the older run: image builds are the heaviest
+# jobs on the self-hosted Docker-in-Docker runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Every pinned version in a Dockerfile must be one Renovate can update.
   renovate-dockerfile-versions:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v7
       - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
   discover-dockerfiles:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       dockerfiles: ${{ steps.find.outputs.dockerfiles }}
       found: ${{ steps.found.outputs.found }}
@@ -54,7 +61,7 @@ jobs:
   build-and-test:
     needs: discover-dockerfiles
     if: needs.discover-dockerfiles.outputs.found == 'true'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-dind
     strategy:
       fail-fast: false
       matrix:

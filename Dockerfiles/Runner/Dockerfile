@@ -64,13 +64,13 @@ RUN set -eux; \
     dir="${RUNNER_TOOL_CACHE}/node/${NODE_VERSION}/x64"; \
     mkdir -p "$dir"; \
     cd /tmp; \
-    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz"; \
-    curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" | grep " node-v${NODE_VERSION}-linux-x64.tar.xz\$" | sha256sum -c -; \
-    tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" -C "$dir" --strip-components=1; \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz"; \
+    curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" | grep " node-v${NODE_VERSION}-linux-x64.tar.gz\$" | sha256sum -c -; \
+    tar -xzf "node-v${NODE_VERSION}-linux-x64.tar.gz" -C "$dir" --strip-components=1; \
     touch "${RUNNER_TOOL_CACHE}/node/${NODE_VERSION}/x64.complete"; \
     ln -sf "$dir/bin/node" "$dir/bin/npm" "$dir/bin/npx" /usr/local/bin/; \
     chown -R runner:runner "${RUNNER_TOOL_CACHE}"; \
-    rm -f /tmp/node-v*.tar.xz; \
+    rm -f /tmp/node-v*.tar.gz; \
     node --version
 
 # Terraform, Vault (zips checked against HashiCorp's SHA256SUMS) and kubectl.

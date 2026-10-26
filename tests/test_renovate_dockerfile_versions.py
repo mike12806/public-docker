@@ -15,10 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # Version ARGs Renovate doesn't track, and why.
-UNTRACKED = {
-    # CodeQL bundle: tracked by hand (not yet a Renovate dependency).
-    "CODEQL_VERSION",
-}
+UNTRACKED: set[str] = set()
 
 
 def manager_regexes():

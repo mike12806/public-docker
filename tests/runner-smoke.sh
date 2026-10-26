@@ -26,6 +26,7 @@ docker run --rm "$image" bash -euc '
   [ "$VERSION_ID" = "26.04" ] || { echo "want Ubuntu 26.04, got $VERSION_ID"; exit 1; }
   [ "$(id -un)" = runner ] && [ "$(id -u)" = 1001 ]
   ~/bin/Runner.Listener --version
+  [ "$(stat -c %U ~)" = runner ] && ! find ~ -maxdepth 2 ! -user runner | grep -q . || { echo "files in ~ not owned by runner:"; find ~ -maxdepth 2 ! -user runner; exit 1; }
   test -x ~/run.sh
   sudo -n true && echo "runner has passwordless sudo"
 '
@@ -40,6 +41,7 @@ docker run --rm "$image" bash -euc '
   restic version; dig -v; ping -V; yq --version; jq --version; b2 version
   docker --version; docker compose version; docker buildx version
   gh --version; git --version; make --version | head -1; file --version | head -1; aws --version
+  python3 -c "import yaml; print(\"PyYAML\", yaml.__version__)"
   python3 -c "import truenas_api_client, websocket; print(\"truenas_api_client + websocket-client\", websocket.__version__)"
 '
 echo "::endgroup::"

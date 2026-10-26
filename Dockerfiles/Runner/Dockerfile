@@ -40,7 +40,7 @@ RUN set -eux; \
       sudo lsb-release gpg-agent software-properties-common git \
       ca-certificates libc6 libgcc-s1 libstdc++6 libssl3t64 libkrb5-3 zlib1g tzdata \
       "$(apt-cache search --names-only '^libicu[0-9]+$' | sort -V | tail -1 | cut -d' ' -f1)" \
-      python3 python3-pip python3-venv pipx sshpass jq rsync openssh-client curl unzip zip wget gpg xxd gnupg \
+      python3 python3-pip python3-venv python3-yaml pipx sshpass jq rsync openssh-client curl unzip zip wget gpg xxd gnupg \
       postgresql-client restic dnsutils iputils-ping file make; \
     # AWS CLI v2
     curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip; \
@@ -80,7 +80,9 @@ WORKDIR /home/runner
 COPY --chown=runner:docker --from=runner /home/runner /home/runner
 COPY --from=runner /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx
 COPY --from=runner /usr/bin/docker /usr/bin/docker
-RUN ./bin/Runner.Listener --version && docker --version && docker compose version && docker buildx version
+# The runner itself is checked as the runner user in tests/runner-smoke.sh:
+# running it here as root would leave a root-owned ~/_diag it can't write to.
+RUN docker --version && docker compose version && docker buildx version
 
 # ---------- Pinned tools jobs would otherwise download every run ----------
 # Renovate bumps these through the `# renovate:` comments (custom regex manager

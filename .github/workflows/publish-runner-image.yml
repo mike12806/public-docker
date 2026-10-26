@@ -19,7 +19,7 @@ jobs:
       contents: write
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
-      version: ${{ steps.tag_version.outputs.new_version }}
+      version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v7
@@ -32,6 +32,27 @@ jobs:
           default_bump: patch
           create_annotated_tag: true
           tag_prefix: v
+
+      # The tag action returns an empty version when HEAD is already tagged
+      # (the weekly rebuild with no new commits), which produced image tags
+      # like "runner:". Fall back to the version tag already on HEAD.
+      - name: Resolve image version
+        id: version
+        env:
+          NEW_VERSION: ${{ steps.tag_version.outputs.new_version }}
+        run: |
+          version="$NEW_VERSION"
+          if [ -z "$version" ]; then
+            version=$(git ls-remote --tags origin \
+              | awk -v sha="$GITHUB_SHA" '$1==sha {print $2}' \
+              | sed -E 's#^refs/tags/v##; s#\^\{\}$##' | sort -V | tail -1)
+            echo "HEAD already tagged; rebuilding version ${version:-<none>}"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::Could not resolve an image version for $GITHUB_SHA"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Discover Dockerfiles
         id: discover
@@ -102,6 +123,8 @@ jobs:
 
   release:
     needs: [build-matrix, build-and-push]
+    # Only cut a release when this run created a new tag.
+    if: needs.build-and-push.outputs.tag != ''
     runs-on: self-hosted
     permissions:
       contents: write

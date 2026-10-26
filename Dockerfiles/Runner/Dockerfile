@@ -5,10 +5,6 @@ FROM ghcr.io/actions/actions-runner:2.338.1 AS runner
 
 FROM ubuntu:26.04
 
-# ---- Versions / paths ----
-ARG CODEQL_VERSION=2.25.2
-ENV CODEQL_VERSION=${CODEQL_VERSION}
-
 ENV DEBIAN_FRONTEND=noninteractive
 # Same runner settings as the official image (ARC relies on them).
 ENV RUNNER_MANUALLY_TRAP_SIG=1
@@ -17,11 +13,6 @@ ENV ImageOS=ubuntu26
 
 # Toolcache root used by @actions/tool-cache on self-hosted runners
 ENV RUNNER_TOOL_CACHE=/opt/hostedtoolcache
-
-# Predeclare where we'll unpack CodeQL (standard layout)
-ENV CODEQL_TOOLCACHE_DIR=${RUNNER_TOOL_CACHE}/CodeQL/${CODEQL_VERSION}/x64
-ENV CODEQL_DIST=${CODEQL_TOOLCACHE_DIR}/codeql
-ENV PATH=${CODEQL_DIST}:${PATH}
 
 # Some Copilot/agents flows demand a GitHub host string. Keep the job step that writes
 # to $GITHUB_ENV, but this ENV helps in most paths.
@@ -134,30 +125,6 @@ RUN set -eux; \
     rm -rf linux-amd64 "helm-v${HELM_VERSION}-linux-amd64.tar.gz"; \
     terraform version; vault version; kubectl version --client; helm version
 
-# ---------- Preinstall CodeQL (toolcache layout) ----------
-# This matches the layout used on GitHub-hosted runners:
-#   /opt/hostedtoolcache/CodeQL/<version>/x64/{codeql/*}
-# Plus marker files: pinned-version and x64.complete
-RUN set -eux; \
-    mkdir -p "${CODEQL_TOOLCACHE_DIR}"; \
-    tmp_tgz="$(mktemp -u)/codeql-bundle-linux64.tar.gz"; \
-    mkdir -p "$(dirname "$tmp_tgz")"; \
-    echo "Downloading CodeQL bundle v${CODEQL_VERSION} ..."; \
-    curl -fsSL "https://github.com/github/codeql-action/releases/download/codeql-bundle-v${CODEQL_VERSION}/codeql-bundle-linux64.tar.gz" -o "${tmp_tgz}"; \
-    echo "Unpacking CodeQL to ${CODEQL_TOOLCACHE_DIR} ..."; \
-    tar -xzf "${tmp_tgz}" -C "${CODEQL_TOOLCACHE_DIR}"; \
-    # Marker files recognized by setup actions
-    touch "${CODEQL_TOOLCACHE_DIR}/pinned-version"; \
-    touch "${RUNNER_TOOL_CACHE}/CodeQL/${CODEQL_VERSION}/x64.complete"; \
-    # Make sure runner user can read the cache and write temp bits alongside it
-    chown -R runner:runner "${RUNNER_TOOL_CACHE}"; \
-    chmod -R a+rX "${RUNNER_TOOL_CACHE}"; \
-    # Convenience shim (optional, PATH is already set)
-    ln -sf "${CODEQL_DIST}/codeql" /usr/local/bin/codeql; \
-    rm -f "${tmp_tgz}"; \
-    # Quick sanity check (as root)
-    codeql --version
-
 # TrueNAS api_client (not on PyPI; pinned to a commit on main) and the
 # websocket-client it needs, for public-jobs' NFS updater. websocket-client
 # 1.9.1 raced on close; see that workflow's history before moving the pin.
@@ -181,8 +148,7 @@ ENV PATH=/home/runner/.local/bin:${PATH}
 ARG ANSIBLE_VERSION=14.5.0
 # renovate: datasource=pypi depName=linode-cli
 ARG LINODE_CLI_VERSION=5.69.0
-RUN codeql --version && \
-    pipx install --include-deps "ansible==${ANSIBLE_VERSION}" && \
+RUN pipx install --include-deps "ansible==${ANSIBLE_VERSION}" && \
     pipx install "linode-cli==${LINODE_CLI_VERSION}" && \
     ansible-playbook --version && \
     rm -rf /home/runner/.cache

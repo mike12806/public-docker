@@ -7,6 +7,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+# A new push to the PR cancels the older run: image builds are the heaviest
+# jobs on the self-hosted Docker-in-Docker runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Every pinned version in a Dockerfile must be one Renovate can update.
   renovate-dockerfile-versions:

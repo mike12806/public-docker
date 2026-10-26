@@ -70,15 +70,19 @@ RUN set -eux; \
 WORKDIR /tmp
 
 # AWS CLI v2. Its installer writes absolute symlinks, so it installs in place
-# and is copied to /out from there.
+# and moves to /out from there. (Like every stage below, it cleans up in the
+# same RUN: the GHA cache stores each stage's layer, so leftovers cost upload
+# time on every cold build.)
 FROM fetch AS awscli
 RUN set -eux; \
     curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip; \
     unzip -q awscliv2.zip; \
     ./aws/install; \
-    mkdir /out; \
-    cp -a --parents /usr/local/aws-cli /usr/local/bin/aws /usr/local/bin/aws_completer /out; \
-    /usr/local/bin/aws --version
+    /usr/local/bin/aws --version; \
+    mkdir -p /out/usr/local/bin; \
+    mv /usr/local/aws-cli /out/usr/local/; \
+    mv /usr/local/bin/aws /usr/local/bin/aws_completer /out/usr/local/bin/; \
+    rm -rf awscliv2.zip aws
 
 # yq v4.53.2 and Backblaze B2 CLI v4.6.0
 FROM fetch AS yq-b2
@@ -113,6 +117,7 @@ RUN set -eux; \
     curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" | grep " ${tgz}\$" | sha256sum -c -; \
     tar -xzf "$tgz"; \
     install -D -m 755 "gh_${GH_VERSION}_linux_amd64/bin/gh" /out/usr/local/bin/gh; \
+    rm -rf "$tgz" "gh_${GH_VERSION}_linux_amd64"; \
     /out/usr/local/bin/gh --version
 
 # ---------- Pinned tools jobs would otherwise download every run ----------
@@ -133,6 +138,7 @@ RUN set -eux; \
     curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" | grep " ${tgz}\$" | sha256sum -c -; \
     mkdir -p "/out$dir" /out/usr/local/bin; \
     tar -xzf "$tgz" -C "/out$dir" --strip-components=1; \
+    rm "$tgz"; \
     touch "/out$dir.complete"; \
     ln -sf "$dir/bin/node" "$dir/bin/npm" "$dir/bin/npx" /out/usr/local/bin/; \
     chown -R 1001:1001 /out/opt/hostedtoolcache; \
@@ -148,6 +154,7 @@ RUN set -eux; \
     curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" | grep " ${zip}\$" | sha256sum -c -; \
     mkdir -p /out/usr/local/bin; \
     unzip -q "$zip" terraform -d /out/usr/local/bin; \
+    rm "$zip"; \
     /out/usr/local/bin/terraform version
 
 FROM fetch AS vault
@@ -159,6 +166,7 @@ RUN set -eux; \
     curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS" | grep " ${zip}\$" | sha256sum -c -; \
     mkdir -p /out/usr/local/bin; \
     unzip -q "$zip" vault -d /out/usr/local/bin; \
+    rm "$zip"; \
     /out/usr/local/bin/vault version
 
 FROM fetch AS kubectl
@@ -181,6 +189,7 @@ RUN set -eux; \
     echo "$(curl -fsSL "https://get.helm.sh/${tgz}.sha256sum" | cut -d' ' -f1)  ${tgz}" | sha256sum -c -; \
     tar -xzf "$tgz" linux-amd64/helm; \
     install -D -m 755 linux-amd64/helm /out/usr/local/bin/helm; \
+    rm -rf "$tgz" linux-amd64; \
     /out/usr/local/bin/helm version
 
 # ---------- Python and npm installs (need the base OS) ----------
@@ -201,17 +210,20 @@ RUN set -eux; \
 # Full Ansible (ansible-core plus collections), for playbooks that would
 # otherwise `pipx run --spec ansible` (which fetches it on every run).
 FROM base AS pipx
-USER runner
 # renovate: datasource=pypi depName=ansible
 ARG ANSIBLE_VERSION=14.5.0
 # renovate: datasource=pypi depName=linode-cli
 ARG LINODE_CLI_VERSION=5.69.0
-RUN pipx install --include-deps "ansible==${ANSIBLE_VERSION}" && \
-    pipx install "linode-cli==${LINODE_CLI_VERSION}" && \
-    ~/.local/bin/ansible-playbook --version && \
-    rm -rf ~/.cache
-USER root
-RUN mkdir /out && cp -a --parents /home/runner/.local /out
+# Installed as the runner user (the venvs record their paths), then moved to
+# /out by root in the same RUN, so the stage is a single layer.
+RUN set -eux; \
+    runuser -u runner -- sh -euxc ' \
+      pipx install --include-deps "ansible==${ANSIBLE_VERSION}"; \
+      pipx install "linode-cli==${LINODE_CLI_VERSION}"; \
+      ~/.local/bin/ansible-playbook --version'; \
+    mkdir /out; \
+    cp -a --parents /home/runner/.local /out; \
+    rm -rf /home/runner/.local /home/runner/.cache /home/runner/.ansible
 
 # Renovate and wrangler in npx's cache, under the same package specs the
 # workflows pass to npx (`npx --yes -p renovate@X ...`), so they run without
@@ -219,18 +231,22 @@ RUN mkdir /out && cp -a --parents /home/runner/.local /out
 # Keep in step with the workflows' RENOVATE_VERSION / WRANGLER_VERSION pins;
 # Renovate bumps both.
 FROM base AS npx
-COPY --from=node /out/ /
-USER runner
 # renovate: datasource=npm depName=renovate
 ARG RENOVATE_VERSION=44.181.7
 # renovate: datasource=npm depName=wrangler
 ARG WRANGLER_VERSION=4.152.0
-RUN set -eux; \
-    npx --yes -p "renovate@${RENOVATE_VERSION}" -c 'renovate --version'; \
-    npx --yes "wrangler@${WRANGLER_VERSION}" --version; \
-    rm -rf ~/.npm/_logs
-USER root
-RUN mkdir /out && cp -a --parents /home/runner/.npm /out
+# Node is mounted where the image has it rather than copied in, and the cache
+# moves to /out in the same RUN, so the stage's single layer is just the cache.
+RUN --mount=type=bind,from=node,source=/out/opt/hostedtoolcache,target=/opt/hostedtoolcache \
+    set -eux; \
+    export PATH="$(echo /opt/hostedtoolcache/node/*/x64/bin):$PATH"; \
+    runuser -u runner -- sh -euxc ' \
+      npx --yes -p "renovate@${RENOVATE_VERSION}" -c "renovate --version"; \
+      npx --yes "wrangler@${WRANGLER_VERSION}" --version'; \
+    rm -rf /home/runner/.npm/_logs; \
+    mkdir /out; \
+    cp -a --parents /home/runner/.npm /out; \
+    rm -rf /home/runner/.npm /home/runner/.cache /home/runner/.config
 
 # ---------- The image ----------
 FROM base

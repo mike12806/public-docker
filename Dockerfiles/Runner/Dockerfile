@@ -23,6 +23,14 @@ ARG COMPOSE_VERSION=5.6.1
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v(?<version>.+)$
 ARG GH_VERSION=2.103.2
 
+# Every download below goes through curl from the self-hosted runners, which
+# occasionally drop a TLS handshake (curl exit 35). Give curl a build-time rc
+# file that retries transient failures. CURL_HOME is an ARG, so it applies to
+# the RUN steps in this stage but isn't baked into the image's environment.
+ARG CURL_HOME=/etc/curl-build
+RUN mkdir -p "$CURL_HOME" && \
+    printf '%s\n' 'retry = 5' 'retry-all-errors' 'retry-delay = 3' 'connect-timeout = 30' > "$CURL_HOME/.curlrc"
+
 # Base tooling, plus the libraries the runner's bundled .NET needs (the
 # official image gets those from dotnet/runtime-deps).
 RUN set -eux; \
@@ -38,7 +46,7 @@ RUN set -eux; \
     unzip -q /tmp/awscliv2.zip -d /tmp; \
     /tmp/aws/install; \
     # yq v4.53.2
-    wget -q -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
+    wget -q --tries=5 --waitretry=3 --retry-connrefused -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
     echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /usr/bin/yq" | sha256sum -c -; \
     chmod +x /usr/bin/yq; \
     # Backblaze B2 CLI v4.6.0

@@ -34,7 +34,7 @@ echo "::endgroup::"
 
 echo "::group::Tools on PATH"
 docker run --rm "$image" bash -euc '
-  python3 --version; codeql --version; psql --version
+  python3 --version; psql --version
   node --version; npm --version
   terraform version; vault version; kubectl version --client; helm version
   ansible-playbook --version; command -v linode-cli

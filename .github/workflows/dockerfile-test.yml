@@ -7,6 +7,13 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  # Every pinned version in a Dockerfile must be one Renovate can update.
+  renovate-dockerfile-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
   discover-dockerfiles:
     runs-on: ubuntu-latest
     outputs:
@@ -82,9 +89,7 @@ jobs:
         run: |
           image_tag="test-${{ steps.imgname.outputs.name }}:${{ github.sha }}"
           if [[ "${{ matrix.dockerfile }}" == *"Runner"* ]]; then
-            docker run --rm "$image_tag" python3 --version
-            docker run --rm "$image_tag" codeql --version
-            docker run --rm "$image_tag" psql --version
+            tests/runner-smoke.sh "$image_tag" "${{ matrix.dockerfile }}"
             exit $?
           fi
           if [[ "${{ matrix.dockerfile }}" == *"Kubectl"* ]]; then

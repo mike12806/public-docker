@@ -125,7 +125,7 @@ RUN set -eux; \
 # skip setup-node. 1001:1001 is runner:runner.
 FROM fetch AS node
 # renovate: datasource=node-version depName=node
-ARG NODE_VERSION=24.22.1
+ARG NODE_VERSION=24.22.2
 RUN set -eux; \
     tgz="node-v${NODE_VERSION}-linux-x64.tar.gz"; \
     dir="/opt/hostedtoolcache/node/${NODE_VERSION}/x64"; \

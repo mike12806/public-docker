@@ -63,7 +63,7 @@ FROM ubuntu:26.04 AS fetch
 ENV CURL_HOME=/etc/curl-build
 RUN set -eux; \
     apt-get update -y; \
-    apt-get install -y --no-install-recommends ca-certificates curl unzip libatomic1; \
+    apt-get install -y --no-install-recommends ca-certificates curl unzip; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p "$CURL_HOME"; \
     printf '%s\n' 'retry = 5' 'retry-all-errors' 'retry-delay = 3' 'connect-timeout = 30' > "$CURL_HOME/.curlrc"
@@ -123,11 +123,15 @@ RUN set -eux; \
 # Node in the toolcache layout ($RUNNER_TOOL_CACHE), so actions/setup-node
 # finds it without downloading (node-version: 26), and on PATH for jobs that
 # skip setup-node. 1001:1001 is runner:runner. Node 25+ links against
-# libatomic, hence libatomic1 in the fetch and base stages.
+# libatomic: it is installed here only for the version check (so the other
+# download stages keep their cache), and in the base stage for the image.
 FROM fetch AS node
 # renovate: datasource=node-version depName=node
 ARG NODE_VERSION=26.13.0
 RUN set -eux; \
+    apt-get update -y; \
+    apt-get install -y --no-install-recommends libatomic1; \
+    rm -rf /var/lib/apt/lists/*; \
     tgz="node-v${NODE_VERSION}-linux-x64.tar.gz"; \
     dir="/opt/hostedtoolcache/node/${NODE_VERSION}/x64"; \
     curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/${tgz}"; \

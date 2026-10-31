@@ -164,7 +164,7 @@ RUN set -eux; \
 
 FROM fetch AS kubectl
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.+)$
-ARG KUBECTL_VERSION=1.37.1
+ARG KUBECTL_VERSION=1.37.2
 RUN set -eux; \
     url="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
     mkdir -p /out/usr/local/bin; \
@@ -223,7 +223,7 @@ FROM base AS npx
 COPY --from=node /out/ /
 USER runner
 # renovate: datasource=npm depName=renovate
-ARG RENOVATE_VERSION=44.190.0
+ARG RENOVATE_VERSION=44.190.1
 # renovate: datasource=npm depName=wrangler
 ARG WRANGLER_VERSION=4.154.0
 RUN set -eux; \

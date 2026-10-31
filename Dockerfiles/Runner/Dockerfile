@@ -31,7 +31,7 @@ RUN set -eux; \
     apt-get update -y; \
     apt-get install -y --no-install-recommends \
       sudo lsb-release gpg-agent software-properties-common git \
-      ca-certificates libc6 libgcc-s1 libstdc++6 libssl3t64 libkrb5-3 zlib1g tzdata \
+      ca-certificates libc6 libgcc-s1 libstdc++6 libssl3t64 libkrb5-3 zlib1g tzdata libatomic1 \
       "$(apt-cache search --names-only '^libicu[0-9]+$' | sort -V | tail -1 | cut -d' ' -f1)" \
       python3 python3-pip python3-venv python3-yaml pipx sshpass jq rsync openssh-client curl unzip zip wget gpg xxd gnupg \
       postgresql-client restic dnsutils iputils-ping file make; \
@@ -121,12 +121,17 @@ RUN set -eux; \
 # instead of installing their own.
 
 # Node in the toolcache layout ($RUNNER_TOOL_CACHE), so actions/setup-node
-# finds it without downloading (node-version: 24), and on PATH for jobs that
-# skip setup-node. 1001:1001 is runner:runner.
+# finds it without downloading (node-version: 26), and on PATH for jobs that
+# skip setup-node. 1001:1001 is runner:runner. Node 25+ links against
+# libatomic: it is installed here only for the version check (so the other
+# download stages keep their cache), and in the base stage for the image.
 FROM fetch AS node
 # renovate: datasource=node-version depName=node
-ARG NODE_VERSION=24.22.2
+ARG NODE_VERSION=26.13.0
 RUN set -eux; \
+    apt-get update -y; \
+    apt-get install -y --no-install-recommends libatomic1; \
+    rm -rf /var/lib/apt/lists/*; \
     tgz="node-v${NODE_VERSION}-linux-x64.tar.gz"; \
     dir="/opt/hostedtoolcache/node/${NODE_VERSION}/x64"; \
     curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/${tgz}"; \

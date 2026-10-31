@@ -210,7 +210,7 @@ USER runner
 # renovate: datasource=pypi depName=ansible
 ARG ANSIBLE_VERSION=14.5.0
 # renovate: datasource=pypi depName=linode-cli
-ARG LINODE_CLI_VERSION=5.69.0
+ARG LINODE_CLI_VERSION=5.70.0
 RUN pipx install --include-deps "ansible==${ANSIBLE_VERSION}" && \
     pipx install "linode-cli==${LINODE_CLI_VERSION}" && \
     ~/.local/bin/ansible-playbook --version && \

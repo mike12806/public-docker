@@ -146,7 +146,7 @@ RUN set -eux; \
 # Terraform and Vault (zips checked against HashiCorp's SHA256SUMS)
 FROM fetch AS terraform
 # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
-ARG TERRAFORM_VERSION=1.17.0
+ARG TERRAFORM_VERSION=1.17.1
 RUN set -eux; \
     zip="terraform_${TERRAFORM_VERSION}_linux_amd64.zip"; \
     curl -fsSLO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${zip}"; \

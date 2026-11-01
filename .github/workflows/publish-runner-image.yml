@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: self-hosted
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     outputs:
@@ -63,7 +63,7 @@ jobs:
 
   build-matrix:
     needs: build-and-push
-    runs-on: self-hosted-dind
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       packages: write
@@ -75,7 +75,7 @@ jobs:
 
       # A docker-container builder (unlike the PR workflow's docker driver)
       # pushes an unchanged image without pulling its cached layers: GHCR
-      # already has them. The runner pod is ephemeral, so skip removing it.
+      # already has them. The runner is ephemeral, so skip removing it.
       - uses: docker/setup-buildx-action@v4
         with:
           cleanup: false
@@ -125,7 +125,7 @@ jobs:
     needs: [build-matrix, build-and-push]
     # Only cut a release when this run created a new tag.
     if: needs.build-and-push.outputs.tag != ''
-    runs-on: self-hosted
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:

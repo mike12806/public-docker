@@ -1,4 +1,0 @@
-self-hosted-runner:
-  # ARC scale sets (hdc kubernetes/github-arc-scale-sets/sets/)
-  labels:
-    - self-hosted-dind

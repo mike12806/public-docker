@@ -1,5 +1,4 @@
 name: docker-build-verification
-# Builds run on the self-hosted Docker-in-Docker runner (self-hosted-dind); the rest on self-hosted.
 permissions:
   contents: read
 
@@ -7,8 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-# A new push to the PR cancels the older run: image builds are the heaviest
-# jobs on the self-hosted Docker-in-Docker runners.
+# A new push to the PR cancels the older run: image builds are the heaviest jobs.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -16,7 +14,7 @@ concurrency:
 jobs:
   # Every pinned version in a Dockerfile must be one Renovate can update.
   renovate-dockerfile-versions:
-    runs-on: self-hosted
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
@@ -25,7 +23,7 @@ jobs:
   # the images this PR changes (their directory, or the Runner smoke test) get
   # built. A change to this workflow builds them all.
   discover-dockerfiles:
-    runs-on: self-hosted
+    runs-on: ubuntu-26.04
     outputs:
       matrix: ${{ steps.find.outputs.matrix }}
       found: ${{ steps.find.outputs.found }}
@@ -63,9 +61,7 @@ jobs:
     name: build-and-test (${{ matrix.dockerfile }})
     needs: discover-dockerfiles
     if: needs.discover-dockerfiles.outputs.found == 'true'
-    # An image this PR doesn't change only reports its check, so it doesn't
-    # need (or hold) a Docker-in-Docker runner.
-    runs-on: ${{ matrix.build && 'self-hosted-dind' || 'self-hosted' }}
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:

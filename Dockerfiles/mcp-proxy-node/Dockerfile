@@ -1,4 +1,4 @@
-FROM ghcr.io/sparfenyuk/mcp-proxy:v0.13.0
+FROM ghcr.io/sparfenyuk/mcp-proxy:v0.13.1
 
 # Install Node.js and npm so mcp-proxy can spawn npx-based MCP servers.
 # Upgrade first: apk add leaves packages already in the base image at their

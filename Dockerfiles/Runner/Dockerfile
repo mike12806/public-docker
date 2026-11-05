@@ -93,7 +93,7 @@ RUN set -eux; \
 # Docker Compose plugin (Docker's apt repo has no 26.04 suite yet)
 FROM fetch AS compose
 # renovate: datasource=github-releases depName=docker/compose extractVersion=^v(?<version>.+)$
-ARG COMPOSE_VERSION=5.6.1
+ARG COMPOSE_VERSION=5.7.0
 RUN set -eux; \
     url="https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64"; \
     bin=/out/usr/local/lib/docker/cli-plugins/docker-compose; \

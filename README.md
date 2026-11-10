@@ -204,7 +204,7 @@ env:
 
 **Image:** `ghcr.io/mike12806/public-docker/gitea`
 
-The official Gitea image with `apk upgrade` applied on top, rebuilt daily.
+The official Gitea image with `apk upgrade` applied on top, rebuilt weekly.
 
 **Base Image:** `gitea/gitea`
 
@@ -224,7 +224,7 @@ services:
 Images are automatically built and published when:
 - Changes are pushed to the `Dockerfiles/**` directory on the main branch
 - Manually triggered via workflow_dispatch
-- Daily via scheduled cron job at 10:00 AM UTC
+- Weekly via scheduled cron job, Mondays at 10:00 AM UTC
 
 The build process:
 1. Discovers all Dockerfiles in the `Dockerfiles/` directory

@@ -3,10 +3,7 @@ name: Build and Publish Docker Images
 on:
   workflow_dispatch:
   schedule:
-    # Daily, so images built on a base distro (gitea on Alpine) pick up its
-    # security fixes within a day instead of waiting for the next upstream
-    # release.
-    - cron: '0 10 * * *'
+    - cron: '0 10 * * 1'
   push:
     branches: [main]
     paths:

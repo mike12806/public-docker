@@ -200,12 +200,31 @@ env:
 
 ---
 
+### 🍵 Gitea
+
+**Image:** `ghcr.io/mike12806/public-docker/gitea`
+
+The official Gitea image with `apk upgrade` applied on top, rebuilt weekly.
+
+**Base Image:** `gitea/gitea`
+
+Upstream rebuilds `gitea/gitea` only when Gitea releases, so Alpine security fixes can wait weeks to reach it. For example, OpenSSH's CVE-2026-123158 ("SSHole") was fixed in Alpine on 2026-11-05, but `gitea/gitea:28.3.0` still ships the vulnerable `openssh-server`. This image is a drop-in replacement: the same entrypoint, user, ports and volumes, with current Alpine packages. The PR smoke test fails if any package is left upgradable.
+
+**Usage Example:**
+```yaml
+services:
+  server:
+    image: ghcr.io/mike12806/public-docker/gitea:latest
+```
+
+---
+
 ## 🔨 Building Images
 
 Images are automatically built and published when:
 - Changes are pushed to the `Dockerfiles/**` directory on the main branch
 - Manually triggered via workflow_dispatch
-- Daily via scheduled cron job at 10:00 AM UTC
+- Weekly via scheduled cron job, Mondays at 10:00 AM UTC
 
 The build process:
 1. Discovers all Dockerfiles in the `Dockerfiles/` directory

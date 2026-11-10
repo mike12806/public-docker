@@ -101,6 +101,15 @@ jobs:
             tests/runner-smoke.sh "$image_tag" "${{ matrix.dockerfile }}"
             exit $?
           fi
+          if [[ "${{ matrix.dockerfile }}" == *"gitea"* ]]; then
+            echo "Testing gitea image: binary runs and no Alpine package is left to upgrade..."
+            docker run --rm --entrypoint /bin/sh "$image_tag" -c '
+              gitea --version &&
+              apk info -v | grep "^openssh-server-" &&
+              pending=$(apk -U list --upgradable 2>/dev/null) &&
+              if [ -n "$pending" ]; then echo "Packages still upgradable:"; echo "$pending"; exit 1; fi'
+            exit $?
+          fi
           if [[ "${{ matrix.dockerfile }}" == *"Kubectl"* ]]; then
             echo "Testing kubectl image with Redis..."
             docker run --rm --entrypoint /bin/sh "$image_tag" -c "kubectl version --client && redis-cli --version"

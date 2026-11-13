@@ -2,7 +2,8 @@
 
 Uses the matchStrings from renovate.json's custom regex manager, so a version
 ARG that Renovate wouldn't see (missing or malformed `# renovate:` comment)
-fails here instead of silently going stale.
+fails here instead of silently going stale. So does a version written straight
+into a download URL.
 
 Run: python3 -m unittest discover -s tests -p 'test_*.py'
 """
@@ -75,6 +76,19 @@ class RenovateDockerfileVersions(unittest.TestCase):
                                 self.assertIn("version", rx.groupindex)
                                 self.assertEqual(rx.match("v" + m.group("currentValue")).group("version"),
                                                  m.group("currentValue"))
+
+    def test_no_version_written_into_a_url(self):
+        # A version spelled out in a download URL never reaches Renovate; it
+        # belongs in a tracked ARG that the URL is built from.
+        for dockerfile in dockerfiles():
+            rel = str(dockerfile.relative_to(ROOT))
+            for n, line in enumerate(dockerfile.read_text().splitlines(), 1):
+                if line.lstrip().startswith("#"):
+                    continue
+                for url in re.findall(r"https?://[^\s\"';]+", line):
+                    with self.subTest(dockerfile=rel, line=n):
+                        self.assertNotRegex(url, r"\d+\.\d+",
+                                            f"{url} has a version in it; move it to an ARG with a `# renovate:` comment")
 
 
 if __name__ == "__main__":

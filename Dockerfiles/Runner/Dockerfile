@@ -127,7 +127,7 @@ RUN set -eux; \
 # download stages keep their cache), and in the base stage for the image.
 FROM fetch AS node
 # renovate: datasource=node-version depName=node
-ARG NODE_VERSION=26.13.0
+ARG NODE_VERSION=26.13.1
 RUN set -eux; \
     apt-get update -y; \
     apt-get install -y --no-install-recommends libatomic1; \

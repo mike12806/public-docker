@@ -247,7 +247,7 @@ USER runner
 # renovate: datasource=npm depName=renovate
 ARG RENOVATE_VERSION=44.232.0
 # renovate: datasource=npm depName=wrangler
-ARG WRANGLER_VERSION=4.160.0
+ARG WRANGLER_VERSION=4.160.1
 RUN set -eux; \
     npx --yes -p "renovate@${RENOVATE_VERSION}" -c 'renovate --version'; \
     npx --yes "wrangler@${WRANGLER_VERSION}" --version; \

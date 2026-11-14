@@ -80,15 +80,33 @@ RUN set -eux; \
     cp -a --parents /usr/local/aws-cli /usr/local/bin/aws /usr/local/bin/aws_completer /out; \
     /usr/local/bin/aws --version
 
-# yq v4.53.2 and Backblaze B2 CLI v4.6.0
-FROM fetch AS yq-b2
+# yq. The release's checksums file has one column per hash type, in the order
+# checksums_hashes_order lists them (after the file name).
+FROM fetch AS yq
+# renovate: datasource=github-releases depName=mikefarah/yq extractVersion=^v(?<version>.+)$
+ARG YQ_VERSION=4.53.2
 RUN set -eux; \
-    mkdir -p /out/usr/bin /out/usr/local/bin; \
-    curl -fsSLo /out/usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64; \
-    echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /out/usr/bin/yq" | sha256sum -c -; \
-    curl -fsSLo /out/usr/local/bin/b2 https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v4.6.0/b2-linux; \
-    echo "4ac55ebe37a50eba9d19f24809da584539e1395992b8aa43f906cc83180bffa1  /out/usr/local/bin/b2" | sha256sum -c -; \
-    chmod +x /out/usr/bin/yq /out/usr/local/bin/b2
+    base="https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}"; \
+    bin=/out/usr/bin/yq; \
+    mkdir -p "$(dirname "$bin")"; \
+    curl -fsSLo "$bin" "$base/yq_linux_amd64"; \
+    col="$(curl -fsSL "$base/checksums_hashes_order" | grep -nx 'SHA-256' | cut -d: -f1)"; \
+    echo "$(curl -fsSL "$base/checksums" | awk -v c="$((col + 1))" '$1 == "yq_linux_amd64" { print $c }')  $bin" | sha256sum -c -; \
+    chmod +x "$bin"; \
+    "$bin" --version
+
+# Backblaze B2 CLI
+FROM fetch AS b2
+# renovate: datasource=github-releases depName=Backblaze/B2_Command_Line_Tool extractVersion=^v(?<version>.+)$
+ARG B2_VERSION=4.6.0
+RUN set -eux; \
+    url="https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v${B2_VERSION}/b2-linux"; \
+    bin=/out/usr/local/bin/b2; \
+    mkdir -p "$(dirname "$bin")"; \
+    curl -fsSLo "$bin" "$url"; \
+    echo "$(curl -fsSL "${url}_hashes.txt" | awk '$1 == "sha256" { print $2 }')  $bin" | sha256sum -c -; \
+    chmod +x "$bin"; \
+    "$bin" version
 
 # Docker Compose plugin (Docker's apt repo has no 26.04 suite yet)
 FROM fetch AS compose
@@ -243,7 +261,8 @@ COPY --link --from=runner-home /home/ /home/
 COPY --link --from=runner /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx
 COPY --link --from=runner /usr/bin/docker /usr/bin/docker
 COPY --link --from=awscli /out/ /
-COPY --link --from=yq-b2 /out/ /
+COPY --link --from=yq /out/ /
+COPY --link --from=b2 /out/ /
 COPY --link --from=compose /out/ /
 COPY --link --from=gh /out/ /
 COPY --link --from=node /out/ /

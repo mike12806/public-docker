@@ -111,7 +111,7 @@ RUN set -eux; \
 # Docker Compose plugin (Docker's apt repo has no 26.04 suite yet)
 FROM fetch AS compose
 # renovate: datasource=github-releases depName=docker/compose extractVersion=^v(?<version>.+)$
-ARG COMPOSE_VERSION=5.7.0
+ARG COMPOSE_VERSION=5.7.1
 RUN set -eux; \
     url="https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64"; \
     bin=/out/usr/local/lib/docker/cli-plugins/docker-compose; \
@@ -245,7 +245,7 @@ FROM base AS npx
 COPY --from=node /out/ /
 USER runner
 # renovate: datasource=npm depName=renovate
-ARG RENOVATE_VERSION=44.226.2
+ARG RENOVATE_VERSION=44.229.0
 # renovate: datasource=npm depName=wrangler
 ARG WRANGLER_VERSION=4.160.0
 RUN set -eux; \

@@ -84,7 +84,7 @@ RUN set -eux; \
 # checksums_hashes_order lists them (after the file name).
 FROM fetch AS yq
 # renovate: datasource=github-releases depName=mikefarah/yq extractVersion=^v(?<version>.+)$
-ARG YQ_VERSION=4.53.2
+ARG YQ_VERSION=4.54.3
 RUN set -eux; \
     base="https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}"; \
     bin=/out/usr/bin/yq; \

@@ -98,7 +98,7 @@ RUN set -eux; \
 # Backblaze B2 CLI
 FROM fetch AS b2
 # renovate: datasource=github-releases depName=Backblaze/B2_Command_Line_Tool extractVersion=^v(?<version>.+)$
-ARG B2_VERSION=4.6.0
+ARG B2_VERSION=4.8.0
 RUN set -eux; \
     url="https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v${B2_VERSION}/b2-linux"; \
     bin=/out/usr/local/bin/b2; \

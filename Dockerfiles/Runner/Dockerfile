@@ -175,7 +175,7 @@ RUN set -eux; \
 
 FROM fetch AS vault
 # renovate: datasource=github-releases depName=hashicorp/vault extractVersion=^v(?<version>.+)$
-ARG VAULT_VERSION=2.2.1
+ARG VAULT_VERSION=2.2.2
 RUN set -eux; \
     zip="vault_${VAULT_VERSION}_linux_amd64.zip"; \
     curl -fsSLO "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${zip}"; \

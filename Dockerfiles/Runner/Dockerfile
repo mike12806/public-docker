@@ -197,7 +197,7 @@ RUN set -eux; \
 
 FROM fetch AS helm
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.+)$
-ARG HELM_VERSION=4.3.1
+ARG HELM_VERSION=4.3.2
 RUN set -eux; \
     tgz="helm-v${HELM_VERSION}-linux-amd64.tar.gz"; \
     curl -fsSLO "https://get.helm.sh/${tgz}"; \

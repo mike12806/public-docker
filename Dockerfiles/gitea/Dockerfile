@@ -11,7 +11,7 @@
 # Renovate bumps GITEA_VERSION; the base image's own entrypoint, user and
 # volumes are inherited unchanged.
 
-ARG GITEA_VERSION=28.3.0
+ARG GITEA_VERSION=28.4.0
 FROM gitea/gitea:${GITEA_VERSION}
 
 RUN apk upgrade --no-cache

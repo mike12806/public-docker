@@ -245,7 +245,7 @@ FROM base AS npx
 COPY --from=node /out/ /
 USER runner
 # renovate: datasource=npm depName=renovate
-ARG RENOVATE_VERSION=44.248.0
+ARG RENOVATE_VERSION=44.248.1
 # renovate: datasource=npm depName=wrangler
 ARG WRANGLER_VERSION=4.163.0
 RUN set -eux; \

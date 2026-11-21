@@ -124,7 +124,7 @@ RUN set -eux; \
 # GitHub CLI
 FROM fetch AS gh
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v(?<version>.+)$
-ARG GH_VERSION=2.104.0
+ARG GH_VERSION=2.105.0
 RUN set -eux; \
     tgz="gh_${GH_VERSION}_linux_amd64.tar.gz"; \
     curl -fsSLO "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${tgz}"; \

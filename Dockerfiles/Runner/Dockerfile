@@ -226,7 +226,7 @@ RUN set -eux; \
 FROM base AS pipx
 USER runner
 # renovate: datasource=pypi depName=ansible
-ARG ANSIBLE_VERSION=14.6.0
+ARG ANSIBLE_VERSION=15.0.0
 # renovate: datasource=pypi depName=linode-cli
 ARG LINODE_CLI_VERSION=5.70.0
 RUN pipx install --include-deps "ansible==${ANSIBLE_VERSION}" && \

@@ -13,11 +13,13 @@
   ],
   "packageRules": [
     {
-      "description": "Ansible upgrades automerge only once the PR's checks pass: the Runner image smoke test runs a play with the new version",
+      "description": "Ansible (the Runner image's ANSIBLE_VERSION pin): every update automerges, majors included, but only once all the PR's checks pass. The Runner image build and its smoke test (a play with facts, a community.crypto module and YAML output, no warnings allowed) are the stage gate. Renovate merges by itself (platformAutomerge off) because GitHub's auto-merge would wait only for the branch's required checks, not these.",
       "matchDepNames": [
         "ansible"
       ],
-      "ignoreTests": false
+      "automerge": true,
+      "ignoreTests": false,
+      "platformAutomerge": false
     }
   ],
   "customManagers": [

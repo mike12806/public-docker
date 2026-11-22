@@ -54,6 +54,40 @@ docker run --rm -e NODE_VERSION="$node_version" -e ANSIBLE_VERSION="$ansible_ver
 '
 echo "::endgroup::"
 
+# --version neither loads a stdout callback nor runs a module. Jobs on this
+# image (gh_hdc's Ansible syntax, Pi-hole and UniFi workflows) run plays on
+# localhost with this Ansible's own Python and its bundled collections, so do
+# that once: facts, a community.crypto module, YAML results, and no warnings.
+echo "::group::Ansible runs a play"
+docker run --rm "$image" bash -euo pipefail -c '
+  cd "$(mktemp -d)"
+  cat > play.yaml <<"EOF"
+- name: Smoke test
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  tasks:
+    - name: Facts came back
+      ansible.builtin.assert:
+        that: ansible_facts.python.version.major == 3
+        quiet: true
+    - name: A community.crypto module runs
+      community.crypto.openssl_privatekey:
+        path: "{{ playbook_dir }}/smoke.key"
+        type: ECC
+        curve: secp256r1
+EOF
+  ANSIBLE_STDOUT_CALLBACK=ansible.builtin.default ANSIBLE_CALLBACK_RESULT_FORMAT=yaml \
+    ansible-playbook -i localhost, play.yaml < /dev/null 2>&1 | tee play.log
+  if grep -E "^\[(WARNING|DEPRECATION WARNING|ERROR)\]" play.log; then
+    echo "Ansible printed the warnings or errors above"
+    exit 1
+  fi
+'
+echo "::endgroup::"
+
 # actions/setup-node looks in $RUNNER_TOOL_CACHE/node/<version>/x64 and only
 # trusts a version with the x64.complete marker beside it.
 echo "::group::Node in the toolcache"

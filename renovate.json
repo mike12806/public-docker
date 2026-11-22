@@ -11,6 +11,15 @@
     "github-actions",
     "custom.regex"
   ],
+  "packageRules": [
+    {
+      "description": "Ansible upgrades automerge only once the PR's checks pass: the Runner image smoke test runs a play with the new version",
+      "matchDepNames": [
+        "ansible"
+      ],
+      "ignoreTests": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",

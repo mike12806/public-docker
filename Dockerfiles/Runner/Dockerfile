@@ -186,7 +186,7 @@ RUN set -eux; \
 
 FROM fetch AS kubectl
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.+)$
-ARG KUBECTL_VERSION=1.37.2
+ARG KUBECTL_VERSION=1.37.3
 RUN set -eux; \
     url="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
     mkdir -p /out/usr/local/bin; \
